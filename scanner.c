@@ -17,18 +17,19 @@ typedef enum {
 typedef struct token token;
 
 struct token {
+	SIMPLEQ_ENTRY(token) toks;
 	tok_t type;
 	int line;
-	SIMPLEQ_ENTRY(token) toks;
 };
 
-SIMPLEQ_HEAD(listhead, token) qhead = SIMPLEQ_HEAD_INITIALIZER(qhead);
+SIMPLEQ_HEAD(tqueue, token);
 
 typedef struct scanner scanner;
 
 struct scanner {
 	void (*state)(scanner *scr);
 	size_t pos, start, inlen;
+	struct tqueue qhead;
 	char *input;
 	int line;
 };
@@ -45,6 +46,7 @@ scanstr(char *str)
 	scr->input = str;
 	scr->inlen = strlen(str);
 
+	SIMPLEQ_INIT(&scr->qhead);
 	return scr;
 }
 
@@ -82,7 +84,7 @@ emit(scanner *scr, tok_t tkt)
 	tok->line = scr->line;
 	tok->type = tkt;
 
-	SIMPLEQ_INSERT_TAIL(&qhead, tok, toks);
+	SIMPLEQ_INSERT_TAIL(&scr->qhead, tok, toks);
 }
 
 void
@@ -96,7 +98,7 @@ lexany(scanner *scr)
 	if (nxt == '\n')
 		emit(scr, NEWLINE);
 
-	printf("%d\n", SIMPLEQ_FIRST(&qhead)->line);
+	printf("%d\n", SIMPLEQ_FIRST(&scr->qhead)->line);
 }
 
 int
