@@ -58,14 +58,19 @@ void
 emit(scanner *scr, tok_t tkt)
 {
 	size_t siz = scr->pos - scr->start;
-	char buf[siz];
+	char buf[siz + 1];
 	token *tok;
 
 	if (!(tok = malloc(sizeof(*tok))))
 		die("malloc failed");
 
-	if (tkt == NEWLINE) scr->line++;
-	memcpy(buf, scr, siz);
+	memcpy(buf, &scr->input[scr->start], siz);
+	buf[++siz] = '\0';
+
+	printf("%s", buf);
+
+	if (tkt == NEWLINE)
+		scr->line++;
 
 	tok->line = scr->line;
 	tok->type = tkt;
