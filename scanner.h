@@ -9,6 +9,7 @@ typedef struct token token;
 struct token {
 	SIMPLEQ_ENTRY(token) toks;
 	tok_t type;
+	char *text;
 	int line;
 };
 

@@ -14,8 +14,10 @@ freescr(scanner *scr)
 	token *tok;
 
 	if (!scr) return;
-	SIMPLEQ_FOREACH(tok, &scr->qhead, toks)
+	SIMPLEQ_FOREACH(tok, &scr->qhead, toks) {
+		if (tok->text) free(tok->text);
 		free(tok);
+	}
 
 	free(scr);
 }
@@ -57,22 +59,24 @@ peekch(scanner *scr)
 void
 emit(scanner *scr, tok_t tkt)
 {
-	size_t siz = scr->pos - scr->start;
-	char buf[siz + 1];
+	size_t siz = scr->pos - scr->start + 1;
 	token *tok;
+	char *dest;
+
+	if (!(dest = malloc(siz + 1 * sizeof(char*))))
+		die("malloc failed");
 
 	if (!(tok = malloc(sizeof(*tok))))
 		die("malloc failed");
 
-	memcpy(buf, &scr->input[scr->start], siz);
-	buf[++siz] = '\0';
-
-	printf("%s", buf);
+	memcpy(dest, &scr->input[scr->start], siz);
+	dest[siz + 1] = '\0';
 
 	if (tkt == NEWLINE)
 		scr->line++;
 
 	tok->line = scr->line;
+	tok->text = dest;
 	tok->type = tkt;
 
 	SIMPLEQ_INSERT_TAIL(&scr->qhead, tok, toks);
@@ -90,7 +94,7 @@ lexany(scanner *scr)
 	if (nxt == '\n')
 		emit(scr, NEWLINE);
 
-	printf("%d\n", SIMPLEQ_FIRST(&scr->qhead)->line);
+	printf("%s", SIMPLEQ_FIRST(&scr->qhead)->text);
 }
 
 int
