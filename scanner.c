@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 #include <sys/queue.h>
 
@@ -84,12 +85,38 @@ emit(scanner *scr, tok_t tkt)
 }
 
 void
+errf(scanner *scr, char *msg, ...)
+{
+	int slen = 1;
+	va_list ap;
+	token *tok;
+	char *dest;
+
+	va_start(ap, msg);
+	slen += vsnprintf(NULL, 0, msg, ap);
+	if (!(dest = malloc(slen * sizeof(char*))))
+		die("malloc failed");
+
+	vsnprintf(dest, slen, msg, ap);
+	va_end(ap);
+
+	if (!(tok = malloc(sizeof(*tok))))
+		die("malloc failed");
+
+	tok->line = scr->start;
+	tok->text = dest;
+	tok->type = ERROR;
+
+	SIMPLEQ_INSERT_TAIL(&scr->qhead, tok, toks);
+}
+
+void
 lexany(scanner *scr)
 {
 	char nxt;
 
 	if ((nxt = nextch(scr)) == -1)
-		emit(scr, ERROR);
+		errf(scr, "Unexpected EOF\n");
 	
 	if (nxt == '\n')
 		emit(scr, NEWLINE);
@@ -102,7 +129,7 @@ main(void)
 {
 	scanner *scr;
 
-	scr = scanstr("\n");
+	scr = scanstr("");
 	lexany(scr);
 
 	freescr(scr);
