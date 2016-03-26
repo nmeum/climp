@@ -5,34 +5,8 @@
 
 #include <sys/queue.h>
 
-#define die(msg) \
-	do { perror(msg); exit(EXIT_FAILURE); } while (0)
-
-typedef enum {
-	EOT,     /* End of termination */
-	ERROR,   /* Lexer error of some sort */
-	NEWLINE, /* The newline character */
-} tok_t;
-
-typedef struct token token;
-
-struct token {
-	SIMPLEQ_ENTRY(token) toks;
-	tok_t type;
-	int line;
-};
-
-SIMPLEQ_HEAD(tqueue, token);
-
-typedef struct scanner scanner;
-
-struct scanner {
-	void (*state)(scanner *scr);
-	size_t pos, start, inlen;
-	struct tqueue qhead;
-	char *input;
-	int line;
-};
+#include "scanner.h"
+#include "climp.h"
 
 scanner*
 scanstr(char *str)
@@ -85,6 +59,7 @@ emit(scanner *scr, tok_t tkt)
 	tok->type = tkt;
 
 	SIMPLEQ_INSERT_TAIL(&scr->qhead, tok, toks);
+	scr->start = scr->pos;
 }
 
 void

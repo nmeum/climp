@@ -2,7 +2,7 @@
 BIN_NAME = scanner
 
 OBJECTS = $(BIN_NAME).o
-HEADERS = config.h
+HEADERS = climp.h scanner.h
 
 CFLAGS ?= -O0 -g -pedantic -Wall
 CFLAGS += -std=c99 -I./compat
