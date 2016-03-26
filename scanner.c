@@ -8,6 +8,18 @@
 #include "scanner.h"
 #include "climp.h"
 
+void
+freescr(scanner *scr)
+{
+	token *tok;
+
+	if (!scr) return;
+	SIMPLEQ_FOREACH(tok, &scr->qhead, toks)
+		free(tok);
+
+	free(scr);
+}
+
 scanner*
 scanstr(char *str)
 {
@@ -84,6 +96,6 @@ main(void)
 	scr = scanstr("\n");
 	lexany(scr);
 
-	free(scr);
+	freescr(scr);
 	return 0;
 }
