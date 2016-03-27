@@ -1,7 +1,11 @@
 typedef enum {
-	EOT,     /* End of termination */
-	ERROR,   /* Lexer error of some sort */
-	NEWLINE, /* The newline character */
+	TOK_EOF,         /* End of file */
+	TOK_VAR,         /* A variable name */
+	TOK_ERROR,       /* Lexer error of ome sort */
+	TOK_NEWLINE,     /* The newline character */
+	TOK_QUESTION,    /* ? */
+	TOK_SEMICOLON,   /* ; */
+	TOK_EXCLAMATION, /* ! */
 } tok_t;
 
 typedef struct token token;
@@ -18,7 +22,6 @@ SIMPLEQ_HEAD(tqueue, token);
 typedef struct scanner scanner;
 
 struct scanner {
-	void (*state)(scanner *scr);
 	size_t pos, start, inlen;
 	struct tqueue qhead;
 	char *input;

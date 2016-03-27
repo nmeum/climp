@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <ctype.h>
 #include <string.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -8,6 +9,9 @@
 
 #include "scanner.h"
 #include "climp.h"
+
+void lexvar(scanner *scr);
+void lexspace(scanner *scr);
 
 void
 freescr(scanner *scr)
@@ -39,6 +43,12 @@ scanstr(char *str)
 	return scr;
 }
 
+token*
+nxttok(scanner *scr)
+{
+	return SIMPLEQ_FIRST(&scr->qhead);
+}
+
 char
 nextch(scanner *scr)
 {
@@ -58,6 +68,12 @@ peekch(scanner *scr)
 }
 
 void
+ignore(scanner *scr)
+{
+	scr->start = scr->pos;
+}
+
+void
 emit(scanner *scr, tok_t tkt)
 {
 	size_t siz = scr->pos - scr->start + 1;
@@ -73,7 +89,7 @@ emit(scanner *scr, tok_t tkt)
 	memcpy(dest, &scr->input[scr->start], siz);
 	dest[siz + 1] = '\0';
 
-	if (tkt == NEWLINE)
+	if (tkt == TOK_NEWLINE)
 		scr->line++;
 
 	tok->line = scr->line;
@@ -105,7 +121,7 @@ errf(scanner *scr, char *msg, ...)
 
 	tok->line = scr->start;
 	tok->text = dest;
-	tok->type = ERROR;
+	tok->type = TOK_ERROR;
 
 	SIMPLEQ_INSERT_TAIL(&scr->qhead, tok, toks);
 }
@@ -116,21 +132,68 @@ lexany(scanner *scr)
 	char nxt;
 
 	if ((nxt = nextch(scr)) == -1)
-		errf(scr, "Unexpected EOF\n");
+		return;
 	
-	if (nxt == '\n')
-		emit(scr, NEWLINE);
+	switch (nxt) {
+	case '\n':
+		emit(scr, TOK_NEWLINE);
+		lexany(scr);
+		return;
+	case ';':
+		emit(scr, TOK_SEMICOLON);
+		lexany(scr);
+		return;
+	case '?':
+		emit(scr, TOK_QUESTION);
+		lexany(scr);
+		return;
+	case '!':
+		emit(scr, TOK_EXCLAMATION);
+		lexany(scr);
+		return;
+	}
 
-	printf("%s", SIMPLEQ_FIRST(&scr->qhead)->text);
+	if (isalpha(nxt)) {
+		lexvar(scr);
+		return;
+	} else if (isspace(nxt)) {
+		lexspace(scr);
+		return;
+	}
+
+	errf(scr, "Invalid character '%c'\n", nxt);
+}
+
+void
+lexvar(scanner *scr)
+{
+	while (isalpha(peekch(scr)))
+		nextch(scr);
+
+	emit(scr, TOK_VAR);
+	lexany(scr);
+}
+
+void
+lexspace(scanner *scr)
+{
+	while (isspace(peekch(scr)))
+		ignore(scr);
+
+	lexany(scr);
 }
 
 int
 main(void)
 {
+	token *tok;
 	scanner *scr;
 
-	scr = scanstr("");
+	scr = scanstr(":\n");
 	lexany(scr);
+
+	tok = nxttok(scr);
+	printf("%s\n", tok->text);
 
 	freescr(scr);
 	return 0;
