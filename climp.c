@@ -11,7 +11,7 @@ main(void)
 
 	scr = scanstr(";\n");
 	for (tok = nxttok(scr); tok; tok = nxttok(scr))
-		printf("%s\n", tok->text);
+		printf("%s", tok->text);
 
 	freescr(scr);
 	return 0;

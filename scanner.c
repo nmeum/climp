@@ -183,8 +183,13 @@ scanstr(char *str)
 token*
 nxttok(scanner *scr)
 {
+	token *tok;
+
 	if (SIMPLEQ_EMPTY(&scr->qhead))
 		return NULL;
 
-	return SIMPLEQ_FIRST(&scr->qhead);
+	tok = SIMPLEQ_FIRST(&scr->qhead);
+	SIMPLEQ_REMOVE_HEAD(&scr->qhead, toks);
+
+	return tok;
 }
