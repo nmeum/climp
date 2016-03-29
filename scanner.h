@@ -27,3 +27,7 @@ struct scanner {
 	char *input;
 	int line;
 };
+
+void freescr(scanner *scr);
+scanner *scanstr(char *str);
+token *nxttok(scanner *scr);

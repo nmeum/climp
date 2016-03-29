@@ -13,42 +13,6 @@
 void lexvar(scanner *scr);
 void lexspace(scanner *scr);
 
-void
-freescr(scanner *scr)
-{
-	token *tok;
-
-	if (!scr) return;
-	SIMPLEQ_FOREACH(tok, &scr->qhead, toks) {
-		if (tok->text) free(tok->text);
-		free(tok);
-	}
-
-	free(scr);
-}
-
-scanner*
-scanstr(char *str)
-{
-	scanner *scr;
-		
-	if (!(scr = malloc(sizeof(*scr))))
-		die("malloc failed");
-
-	scr->pos   = 0;
-	scr->input = str;
-	scr->inlen = strlen(str);
-
-	SIMPLEQ_INIT(&scr->qhead);
-	return scr;
-}
-
-token*
-nxttok(scanner *scr)
-{
-	return SIMPLEQ_FIRST(&scr->qhead);
-}
-
 char
 nextch(scanner *scr)
 {
@@ -161,7 +125,7 @@ lexany(scanner *scr)
 		return;
 	}
 
-	errf(scr, "Invalid character '%c'\n", nxt);
+	errf(scr, "Invalid character '%c'", nxt);
 }
 
 void
@@ -183,18 +147,43 @@ lexspace(scanner *scr)
 	lexany(scr);
 }
 
-int
-main(void)
+void
+freescr(scanner *scr)
 {
 	token *tok;
-	scanner *scr;
 
-	scr = scanstr(":\n");
+	if (!scr) return;
+	SIMPLEQ_FOREACH(tok, &scr->qhead, toks) {
+		if (tok->text) free(tok->text);
+		free(tok);
+	}
+
+	free(scr);
+}
+
+scanner*
+scanstr(char *str)
+{
+	scanner *scr;
+		
+	if (!(scr = malloc(sizeof(*scr))))
+		die("malloc failed");
+
+	scr->pos   = 0;
+	scr->input = str;
+	scr->inlen = strlen(str);
+
+	SIMPLEQ_INIT(&scr->qhead);
 	lexany(scr);
 
-	tok = nxttok(scr);
-	printf("%s\n", tok->text);
+	return scr;
+}
 
-	freescr(scr);
-	return 0;
+token*
+nxttok(scanner *scr)
+{
+	if (SIMPLEQ_EMPTY(&scr->qhead))
+		return NULL;
+
+	return SIMPLEQ_FIRST(&scr->qhead);
 }

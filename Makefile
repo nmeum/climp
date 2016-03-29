@@ -1,7 +1,7 @@
 # See LICENSE for license details.
-BIN_NAME = scanner
+BIN_NAME = climp
 
-OBJECTS = $(BIN_NAME).o
+OBJECTS = $(BIN_NAME).o scanner.o
 HEADERS = climp.h scanner.h
 
 CFLAGS ?= -O0 -g -pedantic -Wall
