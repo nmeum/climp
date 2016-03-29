@@ -44,7 +44,7 @@ emit(scanner *scr, tok_t tkt)
 	token *tok;
 	char *dest;
 
-	if (!(dest = malloc(siz + 1 * sizeof(char*))))
+	if (!(dest = malloc((siz + 1) * sizeof(char*))))
 		die("malloc failed");
 
 	if (!(tok = malloc(sizeof(*tok))))
@@ -170,6 +170,7 @@ scanstr(char *str)
 		die("malloc failed");
 
 	scr->pos   = 0;
+	scr->start = 0;
 	scr->input = str;
 	scr->inlen = strlen(str);
 
