@@ -44,14 +44,14 @@ emit(scanner *scr, tok_t tkt)
 	token *tok;
 	char *dest;
 
-	if (!(dest = malloc((siz + 1) * sizeof(char*))))
+	if (!(dest = malloc(siz * sizeof(char*))))
 		die("malloc failed");
 
 	if (!(tok = malloc(sizeof(*tok))))
 		die("malloc failed");
 
-	memcpy(dest, &scr->input[scr->start], siz);
-	dest[siz + 1] = '\0';
+	memcpy(dest, &scr->input[scr->start], (siz - 1) * sizeof(char*));
+	dest[siz] = '\0';
 
 	if (tkt == TOK_NEWLINE)
 		scr->line++;
