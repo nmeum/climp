@@ -1,6 +1,7 @@
 typedef enum {
 	TOK_EOF,         /* End of file */
 	TOK_VAR,         /* A variable name */
+	TOK_DIG,         /* A natural number */
 	TOK_ERROR,       /* Lexer error of ome sort */
 	TOK_NEWLINE,     /* The newline character */
 	TOK_QUESTION,    /* ? */

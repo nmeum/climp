@@ -9,7 +9,7 @@ main(void)
 	token *tok;
 	scanner *scr;
 
-	scr = scanstr(";\n");
+	scr = scanstr("123");
 	for (tok = nxttok(scr); tok; tok = nxttok(scr))
 		printf("%s", tok->text);
 

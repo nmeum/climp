@@ -11,6 +11,7 @@
 #include "climp.h"
 
 void lexvar(scanner *scr);
+void lexdigit(scanner *scr);
 void lexspace(scanner *scr);
 
 char
@@ -119,6 +120,9 @@ lexany(scanner *scr)
 	if (isalpha(nxt)) {
 		lexvar(scr);
 		return;
+	} else if (isdigit(nxt)) {
+		lexdigit(scr);
+		return;
 	} else if (isspace(nxt)) {
 		lexspace(scr);
 		return;
@@ -134,6 +138,16 @@ lexvar(scanner *scr)
 		nextch(scr);
 
 	emit(scr, TOK_VAR);
+	lexany(scr);
+}
+
+void
+lexdigit(scanner *scr)
+{
+	while (isdigit(peekch(scr)))
+		nextch(scr);
+
+	emit(scr, TOK_DIG);
 	lexany(scr);
 }
 
