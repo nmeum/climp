@@ -26,8 +26,7 @@ char
 peekch(scanner *scr)
 {
 	char nxt = nextch(scr);
-
-	scr->pos--;
+	if (nxt != -1) scr->pos--;
 	return nxt;
 }
 
