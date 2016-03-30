@@ -1,12 +1,18 @@
 typedef enum {
 	TOK_EOF,         /* End of file */
+	TOK_NEWLINE,     /* The newline character */
+
 	TOK_VAR,         /* A variable name */
 	TOK_DIG,         /* A natural number */
 	TOK_ERROR,       /* Lexer error of ome sort */
-	TOK_NEWLINE,     /* The newline character */
+
+	TOK_ASSIGN,      /* := */
 	TOK_QUESTION,    /* ? */
 	TOK_SEMICOLON,   /* ; */
 	TOK_EXCLAMATION, /* ! */
+
+	TOK_LBRACKET,    /* ( */
+	TOK_RBRACKET,    /* ) */
 } tok_t;
 
 typedef struct token token;

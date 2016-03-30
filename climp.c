@@ -9,9 +9,9 @@ main(void)
 	token *tok;
 	scanner *scr;
 
-	scr = scanstr("123");
+	scr = scanstr("(  :=  )");
 	for (tok = nxttok(scr); tok; tok = nxttok(scr))
-		printf("%s", tok->text);
+		printf("TOKEN: %s\n", tok->text);
 
 	freescr(scr);
 	return 0;

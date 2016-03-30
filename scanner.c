@@ -13,6 +13,7 @@
 void lexvar(scanner *scr);
 void lexdigit(scanner *scr);
 void lexspace(scanner *scr);
+void lexassign(scanner *scr);
 
 char
 nextch(scanner *scr)
@@ -50,8 +51,8 @@ emit(scanner *scr, tok_t tkt)
 	if (!(tok = malloc(sizeof(*tok))))
 		die("malloc failed");
 
-	memcpy(dest, &scr->input[scr->start], (siz - 1) * sizeof(char*));
-	dest[siz] = '\0';
+	strncpy(dest, &scr->input[scr->start], siz - 1);
+	dest[siz - 1] = '\0';
 
 	if (tkt == TOK_NEWLINE)
 		scr->line++;
@@ -88,6 +89,7 @@ errf(scanner *scr, char *msg, ...)
 	tok->type = TOK_ERROR;
 
 	SIMPLEQ_INSERT_TAIL(&scr->qhead, tok, toks);
+	scr->start = scr->pos;
 }
 
 void
@@ -105,6 +107,17 @@ lexany(scanner *scr)
 		return;
 	case ';':
 		emit(scr, TOK_SEMICOLON);
+		lexany(scr);
+		return;
+	case ':':
+		lexassign(scr);
+		return;
+	case '(':
+		emit(scr, TOK_LBRACKET);
+		lexany(scr);
+		return;
+	case ')':
+		emit(scr, TOK_RBRACKET);
 		lexany(scr);
 		return;
 	case '?':
@@ -132,6 +145,18 @@ lexany(scanner *scr)
 }
 
 void
+lexassign(scanner *scr) {
+	if (peekch(scr) == '=') {
+		nextch(scr);
+		emit(scr, TOK_ASSIGN);
+	} else {
+		errf(scr, "Expected '=' after got '%c'", peekch(scr));
+	}
+
+	lexany(scr);
+}
+
+void
 lexvar(scanner *scr)
 {
 	while (isalpha(peekch(scr)))
@@ -155,8 +180,9 @@ void
 lexspace(scanner *scr)
 {
 	while (isspace(peekch(scr)))
-		ignore(scr);
+		nextch(scr);
 
+	ignore(scr);
 	lexany(scr);
 }
 
