@@ -120,6 +120,22 @@ lexany(scanner *scr)
 		emit(scr, TOK_RBRACKET);
 		lexany(scr);
 		return;
+	case '%':
+		emit(scr, TOK_DIVIDE);
+		lexany(scr);
+		return;
+	case '*':
+		emit(scr, TOK_MULTI);
+		lexany(scr);
+		return;
+	case '+':
+		emit(scr, TOK_PLUS);
+		lexany(scr);
+		return;
+	case '-':
+		emit(scr, TOK_MINUS);
+		lexany(scr);
+		return;
 	case '?':
 		emit(scr, TOK_QUESTION);
 		lexany(scr);

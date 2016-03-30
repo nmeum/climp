@@ -13,6 +13,11 @@ typedef enum {
 
 	TOK_LBRACKET,    /* ( */
 	TOK_RBRACKET,    /* ) */
+
+	TOK_DIVIDE,      /* % */
+	TOK_MULTI,       /* * */
+	TOK_MINUS,       /* - */
+	TOK_PLUS,        /* + */
 } tok_t;
 
 typedef struct token token;
