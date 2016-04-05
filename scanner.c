@@ -162,11 +162,13 @@ lexany(scanner *scr)
 
 void
 lexassign(scanner *scr) {
-	if (peekch(scr) == '=') {
+	char c;
+
+	if ((c = peekch(scr)) == '=') {
 		nextch(scr);
 		emit(scr, TOK_ASSIGN);
 	} else {
-		errf(scr, "Expected '=' after got '%c'", peekch(scr));
+		errf(scr, "Expected '=' after ':' got '%c'", c);
 	}
 
 	lexany(scr);

@@ -4,7 +4,7 @@ typedef enum {
 
 	TOK_VAR,         /* A variable name */
 	TOK_DIG,         /* A natural number */
-	TOK_ERROR,       /* Lexer error of ome sort */
+	TOK_ERROR,       /* Lexer error of some sort */
 
 	TOK_ASSIGN,      /* := */
 	TOK_QUESTION,    /* ? */
