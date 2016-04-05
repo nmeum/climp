@@ -21,6 +21,17 @@ newcmd(void)
 	return cmd;
 }
 
+void
+freecmd(command *cmd)
+{
+	if (!cmd) return;
+
+	if (cmd->type == CMD_ERROR)
+		free(cmd->d.error.msg);
+
+	free(cmd);
+}
+
 command*
 define(char *var, expr *exp)
 {
