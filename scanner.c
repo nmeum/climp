@@ -15,6 +15,10 @@ void lexdigit(scanner *scr);
 void lexspace(scanner *scr);
 void lexassign(scanner *scr);
 
+/**
+ * TODO: Multithreading with semaphores and pthread.
+ */
+
 char
 nextch(scanner *scr)
 {

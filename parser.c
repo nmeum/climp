@@ -10,6 +10,13 @@
 #include "parser.h"
 #include "scanner.h"
 
+expr *expression(scanner *scr);
+
+/**
+ * TODO: strdup for char pointers in statements / expressions.
+ * TODO: helper functions for malloc and strdup (util.{c,h}).
+ */
+
 statement*
 newstmt(void)
 {
@@ -68,7 +75,73 @@ error(int line, char *msg, ...)
 }
 
 expr*
-expression(token *tok)
+newexpr(void)
+{
+	expr *exp;
+
+	if (!(exp = malloc(sizeof(*exp))))
+		die("malloc failed");
+
+	return exp;
+}
+
+void
+freexpr(expr *exp)
+{
+	if (!exp) return;
+	free(exp);
+}
+
+expr*
+literal(int num)
+{
+	expr *exp;
+
+	exp = newexpr();
+	exp->type = EXP_LIT;
+	exp->d.literal.num = num;
+	return exp;
+}
+
+expr*
+variable(char *name)
+{
+	expr *exp;
+
+	exp = newexpr();
+	exp->type = EXP_VAR;
+	exp->d.variable.var = name;
+	return exp;
+}
+
+expr*
+factor(scanner *scr)
+{
+	expr *exp;
+	token *tok;
+
+	tok = nxttok(scr);
+	if (tok->type == TOK_DIG) {
+		return literal(atoi(tok->text));
+	} else if (tok->type == TOK_VAR) {
+		return variable(tok->text);
+	}
+
+	tok = nxttok(scr);
+	if (tok->type == TOK_LBRACKET) {
+		if (!(exp = expression(scr)))
+			return NULL;
+
+		tok = nxttok(scr);
+		if (tok->type != TOK_RBRACKET)
+			return NULL;
+	}
+
+	return NULL;
+}
+
+expr*
+expression(scanner *scr)
 {
 	// TODO
 	return NULL;
@@ -96,7 +169,7 @@ letstmt(scanner *scr)
 	if (tok->type != TOK_ASSIGN)
 		return error(tok->line, "Expected ':=', got '%s'", tok->text);
 
-	if (!(exp = expression(nxttok(scr))))
+	if (!(exp = expression(scr)))
 		return error(tok->line, "Expected expression after ':='");
 
 	return define(var, exp);
