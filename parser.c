@@ -15,6 +15,7 @@ expr *expression(scanner *scr);
 /**
  * TODO: strdup for char pointers in statements / expressions.
  * TODO: helper functions for malloc and strdup (util.{c,h}).
+ * TODO: better error handling when parsing expressions.
  */
 
 statement*
@@ -141,9 +142,37 @@ factor(scanner *scr)
 }
 
 expr*
+term(scanner *scr)
+{
+	binop op;
+	expr *fac;
+	token *tok;
+
+	if (!(fac = factor(scr)))
+		return NULL;
+
+	tok = nxttok(scr);
+	switch (tok->type) {
+		case TOK_MULTI:
+			op = OP_MULTI;
+			break;
+		case TOK_DIVIDE:
+			op = OP_DIVIDE;
+			break;
+		default:
+			return fac;
+	}
+
+	/* TODO: figure out if next elem is a factor.
+	 * requires some kind of backup or peektok func. */
+	(void)op;
+	return NULL;
+}
+
+expr*
 expression(scanner *scr)
 {
-	// TODO
+	/* TODO */
 	return NULL;
 }
 
