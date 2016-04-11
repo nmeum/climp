@@ -10,45 +10,45 @@
 #include "parser.h"
 #include "scanner.h"
 
-command*
-newcmd(void)
+statement*
+newstmt(void)
 {
-	command *cmd;
+	statement *stmt;
 
-	if (!(cmd = malloc(sizeof(*cmd))))
+	if (!(stmt = malloc(sizeof(*stmt))))
 		die("malloc failed");
 
-	return cmd;
+	return stmt;
 }
 
 void
-freecmd(command *cmd)
+freestmt(statement *stmt)
 {
-	if (!cmd) return;
+	if (!stmt) return;
 
-	if (cmd->type == CMD_ERROR)
-		free(cmd->d.error.msg);
+	if (stmt->type == STMT_ERROR)
+		free(stmt->d.error.msg);
 
-	free(cmd);
+	free(stmt);
 }
 
-command*
+statement*
 define(char *var, expr *exp)
 {
-	command *cmd;
+	statement *stmt;
 
-	cmd = newcmd();
-	cmd->type = CMD_DEFINE;
-	cmd->d.define.var = var;
-	cmd->d.define.exp = exp;
-	return cmd;
+	stmt = newstmt();
+	stmt->type = STMT_DEFINE;
+	stmt->d.define.var = var;
+	stmt->d.define.exp = exp;
+	return stmt;
 }
 
-command*
+statement*
 error(int line, char *msg, ...)
 {
 	int slen = 1;
-	command *cmd;
+	statement *stmt;
 	va_list ap;
 	char *dest;
 
@@ -60,11 +60,11 @@ error(int line, char *msg, ...)
 	vsnprintf(dest, slen, msg, ap);
 	va_end(ap);
 
-	cmd = newcmd();
-	cmd->type = CMD_ERROR;
-	cmd->d.error.msg = dest;
-	cmd->d.error.line = line;
-	return cmd;
+	stmt = newstmt();
+	stmt->type = STMT_ERROR;
+	stmt->d.error.msg = dest;
+	stmt->d.error.line = line;
+	return stmt;
 }
 
 expr*
@@ -74,8 +74,8 @@ expression(token *tok)
 	return NULL;
 }
 
-command*
-letcmd(scanner *scr)
+statement*
+letstmt(scanner *scr)
 {
 	token *tok;
 	char *var;

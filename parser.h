@@ -30,19 +30,19 @@ struct expr {
 };
 
 typedef enum {
-	CMD_ERROR,
-	CMD_DEFINE,
-	CMD_ASSIGN,
-	CMD_READ,
-	CMD_WRITE,
-	CMD_COND,
-	CMD_LOOP,
-} cmd_t;
+	STMT_ERROR,
+	STMT_DEFINE,
+	STMT_ASSIGN,
+	STMT_READ,
+	STMT_WRITE,
+	STMT_COND,
+	STMT_LOOP,
+} stmt_t;
 
-typedef struct command command;
+typedef struct statement statement;
 
-struct command {
-	cmd_t type;
+struct statement {
+	stmt_t type;
 	union {
 		struct {
 			int line;
@@ -64,11 +64,11 @@ struct command {
 		} write;
 		struct {
 			char *cond;
-			command *cmd1, *cmd2;
+			statement *cmd1, *cmd2;
 		} cond;
 		struct {
 			char *cond;
-			command *body;
+			statement *body;
 		} loop;
 	} d;
 };
