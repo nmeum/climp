@@ -6,7 +6,7 @@
 
 #include <sys/queue.h>
 
-#include "climp.h"
+#include "util.h"
 #include "parser.h"
 #include "scanner.h"
 
@@ -14,19 +14,13 @@ expr *expression(scanner *scr);
 
 /**
  * TODO: strdup for char pointers in statements / expressions.
- * TODO: helper functions for malloc and strdup (util.{c,h}).
  * TODO: better error handling when parsing expressions.
  */
 
 statement*
 newstmt(void)
 {
-	statement *stmt;
-
-	if (!(stmt = malloc(sizeof(*stmt))))
-		die("malloc failed");
-
-	return stmt;
+	return emalloc(sizeof(statement));
 }
 
 void
@@ -62,8 +56,7 @@ error(int line, char *msg, ...)
 
 	va_start(ap, msg);
 	slen += vsnprintf(NULL, 0, msg, ap);
-	if (!(dest = malloc(slen * sizeof(char*))))
-		die("malloc failed");
+	dest = emalloc(slen * sizeof(char*));
 
 	vsnprintf(dest, slen, msg, ap);
 	va_end(ap);
@@ -78,12 +71,7 @@ error(int line, char *msg, ...)
 expr*
 newexpr(void)
 {
-	expr *exp;
-
-	if (!(exp = malloc(sizeof(*exp))))
-		die("malloc failed");
-
-	return exp;
+	return emalloc(sizeof(expr));
 }
 
 void

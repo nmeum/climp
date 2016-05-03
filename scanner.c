@@ -8,7 +8,7 @@
 #include <sys/queue.h>
 
 #include "scanner.h"
-#include "climp.h"
+#include "util.h"
 
 void lexvar(scanner *scr);
 void lexdigit(scanner *scr);
@@ -49,11 +49,8 @@ emit(scanner *scr, tok_t tkt)
 	token *tok;
 	char *dest;
 
-	if (!(dest = malloc(siz * sizeof(char*))))
-		die("malloc failed");
-
-	if (!(tok = malloc(sizeof(*tok))))
-		die("malloc failed");
+	dest = emalloc(siz * sizeof(char*));
+	tok = emalloc(sizeof(*tok));
 
 	strncpy(dest, &scr->input[scr->start], siz - 1);
 	dest[siz - 1] = '\0';
@@ -79,15 +76,12 @@ errf(scanner *scr, char *msg, ...)
 
 	va_start(ap, msg);
 	slen += vsnprintf(NULL, 0, msg, ap);
-	if (!(dest = malloc(slen * sizeof(char*))))
-		die("malloc failed");
+	dest = emalloc(slen * sizeof(char*));
 
 	vsnprintf(dest, slen, msg, ap);
 	va_end(ap);
 
-	if (!(tok = malloc(sizeof(*tok))))
-		die("malloc failed");
-
+	tok = emalloc(sizeof(*tok));
 	tok->line = scr->start;
 	tok->text = dest;
 	tok->type = TOK_ERROR;
@@ -227,9 +221,7 @@ scanstr(char *str)
 {
 	scanner *scr;
 		
-	if (!(scr = malloc(sizeof(*scr))))
-		die("malloc failed");
-
+	scr = emalloc(sizeof(*scr));
 	scr->pos   = 0;
 	scr->start = 0;
 	scr->input = str;
