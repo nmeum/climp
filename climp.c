@@ -1,6 +1,9 @@
 #include <stdio.h>
 
 #include <sys/queue.h>
+#include <semaphore.h>
+#include <pthread.h>
+
 #include "scanner.h"
 
 int

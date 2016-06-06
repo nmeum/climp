@@ -4,8 +4,8 @@ BIN_NAME = climp
 OBJECTS = $(BIN_NAME).o scanner.o parser.o util.o
 HEADERS = util.h scanner.h parser.h
 
-CFLAGS ?= -O0 -g -pedantic -Wall
-CFLAGS += -std=c99 -I./compat
+CFLAGS ?= -O0 -g -pedantic -Wall -Werror
+CFLAGS += -pthread -std=c99 -D_POSIX_C_SOURCE=200809L -I./compat
 
 CC      ?= cc
 LDFLAGS ?=

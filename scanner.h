@@ -34,8 +34,11 @@ SIMPLEQ_HEAD(tqueue, token);
 typedef struct scanner scanner;
 
 struct scanner {
+	sem_t *fullsem, *emptysem;
+	pthread_t thread;
 	size_t pos, start, inlen;
 	struct tqueue qhead;
+	pthread_mutex_t *qmutex;
 	char *input;
 	int line;
 };
