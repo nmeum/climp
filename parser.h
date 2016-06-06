@@ -11,6 +11,13 @@ typedef enum {
 	EXP_BIN,
 } expr_t;
 
+typedef struct parser parser;
+
+struct parser {
+	scanner *scr;
+	token *peektok;
+};
+
 typedef struct expr expr;
 
 struct expr {

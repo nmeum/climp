@@ -20,8 +20,6 @@ void lexassign(scanner *scr);
 char
 nextch(scanner *scr)
 {
-	printf("position: %zu\n", scr->pos);
-	printf("inlen: %zu\n", scr->inlen);
 	if (scr->pos >= scr->inlen)
 		return -1;
 

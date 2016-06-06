@@ -9,15 +9,42 @@
 #include <sys/queue.h>
 
 #include "util.h"
-#include "parser.h"
 #include "scanner.h"
+#include "parser.h"
 
-expr *expression(scanner *scr);
+expr *expression(parser *par);
 
 /**
  * TODO: strdup for char pointers in statements / expressions.
  * TODO: better error handling when parsing expressions.
  */
+
+token*
+next(parser *par)
+{
+	token *tok;
+
+	tok = par->peektok;
+	if (tok != NULL)
+		par->peektok = NULL;
+	else
+		tok = nxttok(par->scr);
+
+	return tok;
+}
+
+token*
+peek(parser *par)
+{
+	token *tok;
+
+	tok = par->peektok;
+	if (tok != NULL)
+		return tok;
+
+	par->peektok = nxttok(par->scr);
+	return par->peektok;
+}
 
 statement*
 newstmt(void)
@@ -106,24 +133,24 @@ variable(char *name)
 }
 
 expr*
-factor(scanner *scr)
+factor(parser *par)
 {
 	expr *exp;
 	token *tok;
 
-	tok = nxttok(scr);
+	tok = next(par);
 	if (tok->type == TOK_DIG) {
 		return literal(atoi(tok->text));
 	} else if (tok->type == TOK_VAR) {
 		return variable(tok->text);
 	}
 
-	tok = nxttok(scr);
+	tok = next(par);
 	if (tok->type == TOK_LBRACKET) {
-		if (!(exp = expression(scr)))
+		if (!(exp = expression(par)))
 			return NULL;
 
-		tok = nxttok(scr);
+		tok = next(par);
 		if (tok->type != TOK_RBRACKET)
 			return NULL;
 	}
@@ -132,16 +159,16 @@ factor(scanner *scr)
 }
 
 expr*
-term(scanner *scr)
+term(parser *par)
 {
 	binop op;
 	expr *fac;
 	token *tok;
 
-	if (!(fac = factor(scr)))
+	if (!(fac = factor(par)))
 		return NULL;
 
-	tok = nxttok(scr);
+	tok = next(par);
 	switch (tok->type) {
 		case TOK_MULTI:
 			op = OP_MULTI;
@@ -160,35 +187,35 @@ term(scanner *scr)
 }
 
 expr*
-expression(scanner *scr)
+expression(parser *par)
 {
 	/* TODO */
 	return NULL;
 }
 
 statement*
-letstmt(scanner *scr)
+letstmt(parser *par)
 {
 	token *tok;
 	char *var;
 	expr *exp;
 
-	tok = nxttok(scr);
+	tok = next(par);
 	if (tok->type != TOK_VAR || strcmp(tok->text, "let"))
 		return error(tok->line, "Expected '%s' got '%s'",
 				"let", tok->text);
 	
-	tok = nxttok(scr);
+	tok = next(par);
 	if (tok->type != TOK_VAR)
 		return error(tok->line, "Expected variable after 'let'");
 	else
 		var = tok->text;
 
-	tok = nxttok(scr);
+	tok = next(par);
 	if (tok->type != TOK_ASSIGN)
 		return error(tok->line, "Expected ':=', got '%s'", tok->text);
 
-	if (!(exp = expression(scr)))
+	if (!(exp = expression(par)))
 		return error(tok->line, "Expected expression after ':='");
 
 	return define(var, exp);
