@@ -47,6 +47,9 @@ void
 freepar(parser *par)
 {
 	freescr(par->scr);
+	if (par->peektok)
+		free(par->peektok);
+
 	free(par->buf);
 	free(par);
 }
