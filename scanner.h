@@ -40,7 +40,7 @@ struct scanner {
 	struct tqueue qhead;
 	pthread_mutex_t *qmutex;
 	char *input;
-	int line;
+	int line, eof;
 };
 
 void freescr(scanner *scr);

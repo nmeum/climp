@@ -245,6 +245,7 @@ scanstr(char *str)
 	scanner *scr;
 
 	scr = emalloc(sizeof(*scr));
+	scr->eof    = 0;
 	scr->pos    = 0;
 	scr->start  = 0;
 	scr->input  = estrdup(str);
@@ -272,6 +273,8 @@ nxttok(scanner *scr)
 {
 	token *tok;
 
+	if (scr->eof) return NULL;
+
 	sem_wait(scr->fullsem);
 	pthread_mutex_lock(scr->qmutex);
 	tok = SIMPLEQ_FIRST(&scr->qhead);
@@ -279,8 +282,8 @@ nxttok(scanner *scr)
 	pthread_mutex_unlock(scr->qmutex);
 	sem_post(scr->emptysem);
 
-	if (tok == NULL || tok->type == TOK_EOF)
-		return NULL;
-	else
-		return tok;
+	if (tok->type == TOK_EOF)
+		scr->eof = 1;
+
+	return tok;
 }
