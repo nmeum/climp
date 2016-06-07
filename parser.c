@@ -95,7 +95,17 @@ read(char *var)
 	stmt = newstmt();
 	stmt->type = STMT_READ;
 	stmt->d.read.var = var;
+	return stmt;
+}
 
+statement*
+write(expr *exp)
+{
+	statement *stmt;
+
+	stmt = newstmt();
+	stmt->type = STMT_WRITE;
+	stmt->d.write.exp = exp;
 	return stmt;
 }
 
@@ -318,4 +328,21 @@ readstmt(parser *par)
 		return error(tok->line, "Expected variable after operator");
 
 	return read(tok->text);
+}
+
+statement*
+writestmt(parser *par)
+{
+	token *tok;
+	expr *val;
+
+	tok = next(par);
+	if (tok->type != TOK_EXCLAMATION)
+		return error(tok->line, "Expected '!' got '%s'",
+				tok->text);
+
+	if (!(val = expression(par)))
+		return error(tok->line, "Expected expression after operator");
+
+	return write(val);
 }
