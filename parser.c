@@ -133,6 +133,19 @@ variable(char *name)
 }
 
 expr*
+operation(binop op, expr *expr1, expr *expr2)
+{
+	expr *exp;
+
+	exp = newexpr();
+	exp->type = EXP_BIN;
+	exp->d.operation.op = op;
+	exp->d.operation.expr1 = expr1;
+	exp->d.operation.expr2 = expr2;
+	return exp;
+}
+
+expr*
 factor(parser *par)
 {
 	expr *exp;
@@ -162,10 +175,10 @@ expr*
 term(parser *par)
 {
 	binop op;
-	expr *fac;
+	expr *fac1, *fac2;
 	token *tok;
 
-	if (!(fac = factor(par)))
+	if (!(fac1 = factor(par)))
 		return NULL;
 
 	tok = next(par);
@@ -177,13 +190,13 @@ term(parser *par)
 			op = OP_DIVIDE;
 			break;
 		default:
-			return fac;
+			return fac1;
 	}
 
-	/* TODO: figure out if next elem is a factor.
-	 * requires some kind of backup or peektok func. */
-	(void)op;
-	return NULL;
+	if (!(fac2 = factor(par)))
+		return NULL;
+
+	return operation(op, fac1, fac2);
 }
 
 expr*
