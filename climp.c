@@ -10,17 +10,18 @@
 int
 main(void)
 {
-	parser par;
-	scanner *scr;
 	statement *st;
+	parser *par;
 
-	scr = scanstr("let foo := 1");
-	par.scr = scr;
-	par.peektok = NULL;
+	par = newpar("foo := 1");
 
-	st = stmt(&par);
-	printf("%d\n", st->type);
+	st = stmt(par);
+	if (st->type == STMT_ERROR) {
+		printf("ERROR: %s\n", st->d.error.msg);
+	} else {
+		printf("TYPE: %d\n", st->type);
+	}
 
-	freescr(scr);
+	freepar(par);
 	return 0;
 }

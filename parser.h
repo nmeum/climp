@@ -14,8 +14,9 @@ typedef enum {
 typedef struct parser parser;
 
 struct parser {
+	int cur;
 	scanner *scr;
-	token *peektok;
+	token **buf;
 };
 
 typedef struct expr expr;
@@ -82,3 +83,5 @@ struct statement {
 
 /* XXX remove me */
 statement *stmt(parser *p);
+parser *newpar(char *m);
+void freepar(parser *p);

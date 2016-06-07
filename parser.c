@@ -17,20 +17,48 @@ expr *expression(parser *par);
 /**
  * TODO: strdup for char pointers in statements / expressions.
  * TODO: better error handling when parsing expressions.
+ * TODO: fix memory leaks
  */
 
-token*
-next(parser *par)
+parser*
+newpar(char *str)
 {
-	token *tok;
+	parser *par;
 
-	tok = par->peektok;
-	if (tok != NULL)
-		par->peektok = NULL;
-	else
-		tok = nxttok(par->scr);
+	par = emalloc(sizeof(parser));
+	par->scr = scanstr(str);
+	par->cur = 0;
+	par->buf = malloc(BUFSIZ * sizeof(token));
 
-	return tok;
+	for (int i = 0; i <= BUFSIZ; i++)
+		par->buf[i] = NULL;
+
+	return par;
+}
+
+void
+freepar(parser *par)
+{
+	freescr(par->scr);
+	free(par->buf);
+	free(par);
+}
+
+void
+reset(parser *par)
+{
+	for (int i = 0; i <= par->cur; i++) {
+		free(par->buf[i]);
+		par->buf[i] = NULL;
+	}
+
+	par->cur = 0;
+}
+
+void
+backup(parser *par)
+{
+	par->cur = 0;
 }
 
 token*
@@ -38,12 +66,24 @@ peek(parser *par)
 {
 	token *tok;
 
-	tok = par->peektok;
-	if (tok != NULL)
-		return tok;
+	tok = par->buf[par->cur];
+	if (tok == NULL) {
+		tok = nxttok(par->scr);
+		par->buf[par->cur] = tok;
+	}
+	
+	return tok;
+}
 
-	par->peektok = nxttok(par->scr);
-	return par->peektok;
+token*
+next(parser *par)
+{
+	token *tok;
+
+	tok = peek(par);
+	par->cur++;
+
+	return tok;
 }
 
 statement*
@@ -356,7 +396,6 @@ writestmt(parser *par)
 statement*
 stmt(parser *par)
 {
-	parser opar;
 	statement *val;
 	statement *(*sfuncs[])(parser *p) = {
 		letstmt,
@@ -365,14 +404,14 @@ stmt(parser *par)
 		writestmt,
 	};
 
+	reset(par);
 	for (int i = 0; i < sizeof(sfuncs) / sizeof(sfuncs[0]); i++) {
-		opar = *par;
 		val = (*sfuncs[i])(par);
 
 		if (val->type != STMT_ERROR)
 			break;
 		else
-			par = &opar;
+			backup(par);
 	}
 
 	return val;
