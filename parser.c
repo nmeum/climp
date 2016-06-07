@@ -76,6 +76,18 @@ define(char *var, expr *exp)
 }
 
 statement*
+assign(char *var, expr *exp)
+{
+	statement *stmt;
+
+	stmt = newstmt();
+	stmt->type = STMT_ASSIGN;
+	stmt->d.assign.var = var;
+	stmt->d.assign.exp = exp;
+	return stmt;
+}
+
+statement*
 error(int line, char *msg, ...)
 {
 	int slen = 1;
@@ -253,4 +265,28 @@ letstmt(parser *par)
 		return error(tok->line, "Expected expression after ':='");
 
 	return define(var, exp);
+}
+
+statement*
+assignstmt(parser *par)
+{
+	token *tok;
+	expr *val;
+	char *var;
+
+	tok = next(par);
+	if (tok->type != TOK_VAR)
+		return error(tok->line, "Expected variable for assigment");
+
+	tok = next(par);
+	if (tok->type != TOK_ASSIGN)
+		return error(tok->line, "Expected ':=', got '%s'",
+				tok->text);
+	else
+		var = tok->text;
+
+	if (!(val = expression(par)))
+		return error(tok->line, "Expected expression after ':='");
+
+	return assign(var, val);
 }
