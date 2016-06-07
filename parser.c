@@ -12,6 +12,11 @@
 #include "scanner.h"
 #include "parser.h"
 
+#define EXPTXT(T, M) \
+	do { if (T->type != TOK_VAR || strcmp(T->text, M)) \
+		return error(T->line, "Expected '%s' got '%s'", M, T->text); \
+	   } while (0)
+
 expr *expression(parser *par);
 
 /**
@@ -150,6 +155,19 @@ write(expr *exp)
 	stmt = newstmt();
 	stmt->type = STMT_WRITE;
 	stmt->d.write.exp = exp;
+	return stmt;
+}
+
+statement*
+cond(expr *cexp, statement *cmd1, statement *cmd2)
+{
+	statement *stmt;
+
+	stmt = newstmt();
+	stmt->type = STMT_COND;
+	stmt->d.cond.cond = cexp;
+	stmt->d.cond.cmd1 = cmd1;
+	stmt->d.cond.cmd2 = cmd2;
 	return stmt;
 }
 
@@ -319,9 +337,7 @@ letstmt(parser *par)
 	expr *exp;
 
 	tok = next(par);
-	if (tok->type != TOK_VAR || strcmp(tok->text, "let"))
-		return error(tok->line, "Expected '%s' got '%s'",
-				"let", tok->text);
+	EXPTXT(tok, "let");
 	
 	tok = next(par);
 	if (tok->type != TOK_VAR)
@@ -398,6 +414,39 @@ writestmt(parser *par)
 }
 
 statement*
+condstmt(parser *par)
+{
+	statement *cmd1, *cmd2;
+	token *tok;
+	expr *cexp;
+
+	tok = next(par);
+	EXPTXT(tok, "if");
+
+	if (!(cexp = expression(par)))
+		return error(tok->line, "Expected conditional expression");
+
+	tok = next(par);
+	EXPTXT(tok, "then");
+
+	cmd1 = stmt(par);
+	if (cmd1->type == STMT_ERROR)
+		return error(tok->line, "Missing then-branch");
+
+	tok = next(par);
+	EXPTXT(tok, "else");
+
+	cmd2 = stmt(par);
+	if (cmd2->type == STMT_ERROR)
+		return error(tok->line, "Missing else-branch");
+
+	tok = next(par);
+	EXPTXT(tok, "end");
+
+	return cond(cexp, cmd1, cmd2);
+}
+
+statement*
 stmt(parser *par)
 {
 	statement *val;
@@ -406,6 +455,7 @@ stmt(parser *par)
 		assignstmt,
 		readstmt,
 		writestmt,
+		condstmt,
 	};
 
 	reset(par);

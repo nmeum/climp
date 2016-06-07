@@ -72,11 +72,11 @@ struct statement {
 			expr *exp;
 		} write;
 		struct {
-			char *cond;
+			expr *cond;
 			statement *cmd1, *cmd2;
 		} cond;
 		struct {
-			char *cond;
+			expr *cond;
 			statement *body;
 		} loop;
 	} d;
