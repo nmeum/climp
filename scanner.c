@@ -217,7 +217,7 @@ lexspace(scanner *scr)
 void
 freescr(scanner *scr)
 {
-	token *tok;
+	token *tok, *nxt;
 
 	if (!scr)
 		return;
@@ -225,7 +225,7 @@ freescr(scanner *scr)
 	pthread_join(scr->thread, NULL); /* TODO stop the thread instead. */
 	pthread_mutex_destroy(scr->qmutex);
 
-	SIMPLEQ_FOREACH(tok, &scr->qhead, toks) { /* TODO USE FOREACH_SAFE */
+	SIMPLEQ_FOREACH_SAFE(tok, &scr->qhead, toks, nxt) {
 		if (tok->text) free(tok->text);
 		free(tok);
 	}
