@@ -5,16 +5,21 @@
 #include <pthread.h>
 
 #include "scanner.h"
+#include "parser.h"
 
 int
 main(void)
 {
-	token *tok;
+	parser par;
 	scanner *scr;
+	statement *st;
 
-	scr = scanstr("(  :=  )");
-	for (tok = nxttok(scr); tok; tok = nxttok(scr))
-		printf("TOKEN: %s\n", tok->text);
+	scr = scanstr("let foo := 1");
+	par.scr = scr;
+	par.peektok = NULL;
+
+	st = stmt(&par);
+	printf("%d\n", st->type);
 
 	freescr(scr);
 	return 0;

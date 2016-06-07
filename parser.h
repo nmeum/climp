@@ -79,3 +79,6 @@ struct statement {
 		} loop;
 	} d;
 };
+
+/* XXX remove me */
+statement *stmt(parser *p);

@@ -200,6 +200,8 @@ factor(parser *par)
 		tok = next(par);
 		if (tok->type != TOK_RBRACKET)
 			return NULL;
+
+		return exp;
 	}
 
 	return NULL;
@@ -215,13 +217,15 @@ term(parser *par)
 	if (!(fac1 = factor(par)))
 		return NULL;
 
-	tok = next(par);
+	tok = peek(par);
 	switch (tok->type) {
 		case TOK_MULTI:
 			op = OP_MULTI;
+			next(par);
 			break;
 		case TOK_DIVIDE:
 			op = OP_DIVIDE;
+			next(par);
 			break;
 		default:
 			return fac1;
@@ -243,13 +247,15 @@ expression(parser *par)
 	if (!(term1 = term(par)))
 		return NULL;
 
-	tok = next(par);
+	tok = peek(par);
 	switch (tok->type) {
 		case TOK_PLUS:
 			op = OP_PLUS;
+			next(par);
 			break;
 		case TOK_MINUS:
 			op = OP_MINUS;
+			next(par);
 			break;
 		default:
 			return term1;
@@ -345,4 +351,29 @@ writestmt(parser *par)
 		return error(tok->line, "Expected expression after operator");
 
 	return write(val);
+}
+
+statement*
+stmt(parser *par)
+{
+	parser opar;
+	statement *val;
+	statement *(*sfuncs[])(parser *p) = {
+		letstmt,
+		assignstmt,
+		readstmt,
+		writestmt,
+	};
+
+	for (int i = 0; i < sizeof(sfuncs) / sizeof(sfuncs[0]); i++) {
+		opar = *par;
+		val = (*sfuncs[i])(par);
+
+		if (val->type != STMT_ERROR)
+			break;
+		else
+			par = &opar;
+	}
+
+	return val;
 }
