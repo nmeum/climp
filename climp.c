@@ -13,7 +13,7 @@ main(void)
 	statement *st;
 	parser *par;
 
-	par = newpar("if 1 then let foo := 1 else bar := 5 end");
+	par = newpar("while 1 do let f := 2 end");
 
 	st = stmt(par);
 	if (st->type == STMT_ERROR) {

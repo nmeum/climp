@@ -176,6 +176,18 @@ cond(expr *cexp, statement **brn1, statement **brn2)
 }
 
 statement*
+loop(expr *cexp, statement **brn)
+{
+	statement *stmt;
+
+	stmt = newstmt();
+	stmt->type = STMT_LOOP;
+	stmt->d.loop.cond = cexp;
+	stmt->d.loop.brn  = brn;
+	return stmt;
+}
+
+statement*
 error(int line, char *msg, ...)
 {
 	int slen = 1;
@@ -474,6 +486,29 @@ condstmt(parser *par)
 }
 
 statement*
+loopstmt(parser *par)
+{
+	token *tok;
+	statement **cmds;
+	expr *cexp;
+
+	tok = next(par);
+	EXPTXT(tok, "while");
+
+	if (!(cexp = expression(par)))
+		return error(tok->line, "Expected conditional expression");
+
+	tok = next(par);
+	EXPTXT(tok, "do");
+
+	cmds = commands(par);
+	tok = next(par);
+	EXPTXT(tok, "end");
+
+	return loop(cexp, cmds);
+}
+
+statement*
 stmt(parser *par)
 {
 	statement *val;
@@ -483,6 +518,7 @@ stmt(parser *par)
 		readstmt,
 		writestmt,
 		condstmt,
+		loopstmt,
 	};
 
 	reset(par);

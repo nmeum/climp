@@ -77,7 +77,7 @@ struct statement {
 		} cond;
 		struct {
 			expr *cond;
-			statement **brn1, **brn2;
+			statement **brn;
 		} loop;
 	} d;
 };
