@@ -88,6 +88,18 @@ assign(char *var, expr *exp)
 }
 
 statement*
+read(char *var)
+{
+	statement *stmt;
+
+	stmt = newstmt();
+	stmt->type = STMT_READ;
+	stmt->d.read.var = var;
+
+	return stmt;
+}
+
+statement*
 error(int line, char *msg, ...)
 {
 	int slen = 1;
@@ -289,4 +301,21 @@ assignstmt(parser *par)
 		return error(tok->line, "Expected expression after ':='");
 
 	return assign(var, val);
+}
+
+statement*
+readstmt(parser *par)
+{
+	token *tok;
+
+	tok = next(par);
+	if (tok->type != TOK_QUESTION)
+		return error(tok->line, "Expected '?' got '%s'",
+				tok->text);
+
+	tok = next(par);
+	if (tok->type != TOK_VAR)
+		return error(tok->line, "Expected variable after operator");
+
+	return read(tok->text);
 }
