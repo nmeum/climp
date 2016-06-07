@@ -27,10 +27,11 @@ newpar(char *str)
 
 	par = emalloc(sizeof(parser));
 	par->scr = scanstr(str);
+	par->max = 5 * 1024;
 	par->cur = 0;
-	par->buf = malloc(BUFSIZ * sizeof(token));
+	par->buf = malloc(par->max * sizeof(token));
 
-	for (int i = 0; i <= BUFSIZ; i++)
+	for (int i = 0; i <= par->max; i++)
 		par->buf[i] = NULL;
 
 	return par;
@@ -65,6 +66,9 @@ token*
 peek(parser *par)
 {
 	token *tok;
+
+	if (par->cur > par->max)
+		reset(par); /* FIXME */
 
 	tok = par->buf[par->cur];
 	if (tok == NULL) {

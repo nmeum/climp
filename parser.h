@@ -15,6 +15,7 @@ typedef struct parser parser;
 
 struct parser {
 	int cur;
+	size_t max;
 	scanner *scr;
 	token **buf;
 };
