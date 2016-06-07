@@ -202,8 +202,29 @@ term(parser *par)
 expr*
 expression(parser *par)
 {
-	/* TODO */
-	return NULL;
+	binop op;
+	expr *term1, *term2;
+	token *tok;
+
+	if (!(term1 = term(par)))
+		return NULL;
+
+	tok = next(par);
+	switch (tok->type) {
+		case TOK_PLUS:
+			op = OP_PLUS;
+			break;
+		case TOK_MINUS:
+			op = OP_MINUS;
+			break;
+		default:
+			return term1;
+	}
+
+	if (!(term2 = term(par)))
+		return NULL;
+
+	return operation(op, term1, term2);
 }
 
 statement*
