@@ -34,7 +34,8 @@ newpar(char *str)
 	par->scr = scanstr(str);
 	par->max = 5 * 1024;
 	par->cur = 0;
-	par->buf = malloc(par->max * sizeof(token));
+	par->buf = emalloc(par->max * sizeof(token));
+	par->peektok = NULL;
 
 	for (int i = 0; i <= par->max; i++)
 		par->buf[i] = NULL;
@@ -53,12 +54,12 @@ freepar(parser *par)
 void
 reset(parser *par)
 {
-	for (int i = 0; i <= par->cur; i++) {
-		free(par->buf[i]);
+	for (int i = 0; i <= par->cur; i++)
 		par->buf[i] = NULL;
-	}
 
 	par->cur = 0;
+	if (par->peektok != NULL)
+		par->buf[0] = par->peektok;
 }
 
 void
@@ -79,8 +80,11 @@ peek(parser *par)
 	if (tok == NULL) {
 		tok = nxttok(par->scr);
 		par->buf[par->cur] = tok;
+		par->peektok = tok;
+	} else {
+		par->peektok = NULL;
 	}
-	
+
 	return tok;
 }
 
@@ -159,15 +163,15 @@ write(expr *exp)
 }
 
 statement*
-cond(expr *cexp, statement *cmd1, statement *cmd2)
+cond(expr *cexp, statement **brn1, statement **brn2)
 {
 	statement *stmt;
 
 	stmt = newstmt();
 	stmt->type = STMT_COND;
 	stmt->d.cond.cond = cexp;
-	stmt->d.cond.cmd1 = cmd1;
-	stmt->d.cond.cmd2 = cmd2;
+	stmt->d.cond.brn1 = brn1;
+	stmt->d.cond.brn2 = brn2;
 	return stmt;
 }
 
@@ -329,6 +333,35 @@ expression(parser *par)
 	return operation(op, term1, term2);
 }
 
+statement**
+commands(parser *par)
+{
+	size_t i = -1;
+	token *tok;
+	statement **cmds;
+	size_t max = 1024;
+
+	cmds = malloc(max * sizeof(statement));
+	for (i = 0, tok = peek(par); tok != TOK_EOF;
+			i++, tok = peek(par)) {
+		if (i >= max) break; /* FIXME */
+		cmds[i] = stmt(par);
+
+		tok = peek(par);
+		if (tok->type == TOK_SEMICOLON)
+			next(par);
+		else
+			break;
+	}
+
+	if (i == -1)
+		return NULL;
+	else
+		cmds[++i] = NULL;
+
+	return cmds;
+}
+
 statement*
 letstmt(parser *par)
 {
@@ -416,7 +449,7 @@ writestmt(parser *par)
 statement*
 condstmt(parser *par)
 {
-	statement *cmd1, *cmd2;
+	statement **cmds1, **cmds2;
 	token *tok;
 	expr *cexp;
 
@@ -429,21 +462,15 @@ condstmt(parser *par)
 	tok = next(par);
 	EXPTXT(tok, "then");
 
-	cmd1 = stmt(par);
-	if (cmd1->type == STMT_ERROR)
-		return error(tok->line, "Missing then-branch");
-
+	cmds1 = commands(par);
 	tok = next(par);
 	EXPTXT(tok, "else");
 
-	cmd2 = stmt(par);
-	if (cmd2->type == STMT_ERROR)
-		return error(tok->line, "Missing else-branch");
-
+	cmds2 = commands(par);
 	tok = next(par);
 	EXPTXT(tok, "end");
 
-	return cond(cexp, cmd1, cmd2);
+	return cond(cexp, cmds1, cmds2);
 }
 
 statement*

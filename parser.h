@@ -17,7 +17,7 @@ struct parser {
 	int cur;
 	size_t max;
 	scanner *scr;
-	token **buf;
+	token **buf, *peektok;
 };
 
 typedef struct expr expr;
@@ -73,11 +73,11 @@ struct statement {
 		} write;
 		struct {
 			expr *cond;
-			statement *cmd1, *cmd2;
+			statement **brn1, **brn2;
 		} cond;
 		struct {
 			expr *cond;
-			statement *body;
+			statement **brn1, **brn2;
 		} loop;
 	} d;
 };
