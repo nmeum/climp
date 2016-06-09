@@ -23,13 +23,13 @@ typedef enum {
 typedef struct token token;
 
 struct token {
-	SIMPLEQ_ENTRY(token) toks;
+	TAILQ_ENTRY(token) toks;
 	tok_t type;
 	char *text;
 	int line;
 };
 
-SIMPLEQ_HEAD(tqueue, token);
+TAILQ_HEAD(tqueue, token);
 
 typedef struct scanner scanner;
 

@@ -12,6 +12,8 @@
 #include "scanner.h"
 #include "util.h"
 
+static token septok = { .type = -1, .text = NULL, .line = -1 };
+
 void lexvar(scanner *scr);
 void lexdigit(scanner *scr);
 void lexspace(scanner *scr);
@@ -62,7 +64,7 @@ emit(scanner *scr, tok_t tkt)
 
 	sem_wait(scr->emptysem);
 	pthread_mutex_lock(scr->qmutex);
-	SIMPLEQ_INSERT_TAIL(&scr->qhead, tok, toks);
+	TAILQ_INSERT_BEFORE(&septok, tok, toks);
 	pthread_mutex_unlock(scr->qmutex);
 	sem_post(scr->fullsem);
 
@@ -91,7 +93,7 @@ errf(scanner *scr, char *msg, ...)
 
 	sem_wait(scr->emptysem);
 	pthread_mutex_lock(scr->qmutex);
-	SIMPLEQ_INSERT_TAIL(&scr->qhead, tok, toks);
+	TAILQ_INSERT_BEFORE(&septok, tok, toks);
 	pthread_mutex_unlock(scr->qmutex);
 	sem_post(scr->fullsem);
 
@@ -225,9 +227,11 @@ freescr(scanner *scr)
 	pthread_join(scr->thread, NULL); /* TODO stop the thread instead. */
 	pthread_mutex_destroy(scr->qmutex);
 
-	SIMPLEQ_FOREACH_SAFE(tok, &scr->qhead, toks, nxt) {
-		if (tok->text) free(tok->text);
-		free(tok);
+	TAILQ_FOREACH_SAFE(tok, &scr->qhead, toks, nxt) {
+		if (tok->type != -1) {
+			free(tok->text);
+			free(tok);
+		}
 	}
 
 	if (sem_destroy(scr->fullsem) ||
@@ -261,9 +265,10 @@ scanstr(char *str)
 			|| sem_init(scr->emptysem, 0, 1))
 		die("sem_init failed");
 
-	pthread_mutex_init(scr->qmutex, NULL);
-	SIMPLEQ_INIT(&scr->qhead);
+	TAILQ_INIT(&scr->qhead);
+	TAILQ_INSERT_TAIL(&scr->qhead, &septok, toks);
 
+	pthread_mutex_init(scr->qmutex, NULL);
 	pthread_create(&scr->thread, NULL, lexany, scr);
 	return scr;
 }
@@ -277,8 +282,9 @@ nxttok(scanner *scr)
 
 	sem_wait(scr->fullsem);
 	pthread_mutex_lock(scr->qmutex);
-	tok = SIMPLEQ_FIRST(&scr->qhead);
-	SIMPLEQ_REMOVE_HEAD(&scr->qhead, toks);
+	tok = TAILQ_FIRST(&scr->qhead);
+	TAILQ_REMOVE(&scr->qhead, tok, toks);
+	TAILQ_INSERT_AFTER(&scr->qhead, &septok, tok, toks);
 	pthread_mutex_unlock(scr->qmutex);
 	sem_post(scr->emptysem);
 
