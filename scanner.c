@@ -238,6 +238,8 @@ freescr(scanner *scr)
 			sem_destroy(scr->emptysem))
 		die("sem_destroy failed");
 
+	free(scr->fullsem);
+	free(scr->emptysem);
 	free(scr->qmutex);
 	free(scr->input);
 	free(scr);
@@ -255,14 +257,13 @@ scanstr(char *str)
 	scr->input  = estrdup(str);
 	scr->inlen  = strlen(str);
 	scr->qmutex = emalloc(sizeof(pthread_mutex_t));
-	scr->thread = emalloc(sizeof(pthread_t));
 
 	scr->fullsem  = emalloc(sizeof(sem_t));
 	scr->emptysem = emalloc(sizeof(sem_t));
 
 	/* TODO adjust initial emptysem value */
 	if (sem_init(scr->fullsem, 0, 0)
-			|| sem_init(scr->emptysem, 0, 1))
+			|| sem_init(scr->emptysem, 0, 250))
 		die("sem_init failed");
 
 	TAILQ_INIT(&scr->qhead);
