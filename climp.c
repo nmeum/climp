@@ -23,5 +23,6 @@ main(void)
 	}
 
 	freepar(par);
+	freestmt(st);
 	return 0;
 }

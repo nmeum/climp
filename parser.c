@@ -17,12 +17,12 @@
 		return error(T->line, "Expected '%s' got '%s'", M, T->text); \
 	   } while (0)
 
+void freeexpr(expr *exp);
 expr *expression(parser *par);
 
 /**
  * TODO: strdup for char pointers in statements / expressions.
  * TODO: better error handling when parsing expressions.
- * TODO: fix memory leaks
  */
 
 parser*
@@ -109,12 +109,49 @@ newstmt(void)
 }
 
 void
+freestmts(statement **stmts)
+{
+	int i = 0;
+
+	if (!stmts) return;
+	while (stmts[i])
+		freestmt(stmts[i++]);
+	free(stmts);
+}
+
+void
 freestmt(statement *stmt)
 {
 	if (!stmt) return;
 
-	if (stmt->type == STMT_ERROR)
-		free(stmt->d.error.msg);
+	switch (stmt->type) {
+		case STMT_ERROR:
+			free(stmt->d.error.msg);
+			break;
+		case STMT_DEFINE:
+			freeexpr(stmt->d.define.exp);
+			free(stmt->d.define.var);
+			break;
+		case STMT_ASSIGN:
+			freeexpr(stmt->d.assign.exp);
+			free(stmt->d.assign.var);
+			break;
+		case STMT_READ:
+			free(stmt->d.read.var);
+			break;
+		case STMT_WRITE:
+			freeexpr(stmt->d.write.exp);
+			break;
+		case STMT_COND:
+			freeexpr(stmt->d.cond.cond);
+			freestmts(stmt->d.cond.brn1);
+			freestmts(stmt->d.cond.brn2);
+			break;
+		case STMT_LOOP:
+			freeexpr(stmt->d.loop.cond);
+			freestmts(stmt->d.loop.brn);
+			break;
+	}
 
 	free(stmt);
 }
@@ -126,7 +163,7 @@ define(char *var, expr *exp)
 
 	stmt = newstmt();
 	stmt->type = STMT_DEFINE;
-	stmt->d.define.var = var;
+	stmt->d.define.var = estrdup(var);
 	stmt->d.define.exp = exp;
 	return stmt;
 }
@@ -138,7 +175,7 @@ assign(char *var, expr *exp)
 
 	stmt = newstmt();
 	stmt->type = STMT_ASSIGN;
-	stmt->d.assign.var = var;
+	stmt->d.assign.var = estrdup(var);
 	stmt->d.assign.exp = exp;
 	return stmt;
 }
@@ -150,7 +187,7 @@ read(char *var)
 
 	stmt = newstmt();
 	stmt->type = STMT_READ;
-	stmt->d.read.var = var;
+	stmt->d.read.var = estrdup(var);
 	return stmt;
 }
 
@@ -219,9 +256,23 @@ newexpr(void)
 }
 
 void
-freexpr(expr *exp)
+freeexpr(expr *exp)
 {
 	if (!exp) return;
+
+	switch (exp->type) {
+		case EXP_LIT:
+			/* Nothing to free here. */
+			break;
+		case EXP_VAR:
+			free(exp->d.variable.var);
+			break;
+		case EXP_BIN:
+			freeexpr(exp->d.operation.expr1);
+			freeexpr(exp->d.operation.expr2);
+			break;
+	}
+
 	free(exp);
 }
 
@@ -243,7 +294,7 @@ variable(char *name)
 
 	exp = newexpr();
 	exp->type = EXP_VAR;
-	exp->d.variable.var = name;
+	exp->d.variable.var = strdup(name);
 	return exp;
 }
 
@@ -527,11 +578,11 @@ stmt(parser *par)
 	reset(par);
 	for (int i = 0; i < sizeof(sfuncs) / sizeof(sfuncs[0]); i++) {
 		val = (*sfuncs[i])(par);
-
 		if (val->type != STMT_ERROR)
 			break;
-		else
-			backup(par);
+
+		freestmt(val);
+		backup(par);
 	}
 
 	return val;
