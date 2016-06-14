@@ -574,15 +574,18 @@ stmt(parser *par)
 		condstmt,
 		loopstmt,
 	};
+	size_t funclen = sizeof(sfuncs) / sizeof(sfuncs[0]);
 
 	reset(par);
-	for (int i = 0; i < sizeof(sfuncs) / sizeof(sfuncs[0]); i++) {
+	for (int i = 0; i < funclen; i++) {
 		val = (*sfuncs[i])(par);
 		if (val->type != STMT_ERROR)
 			break;
 
-		freestmt(val);
-		backup(par);
+		if (i + 1 < funclen) {
+			freestmt(val);
+			backup(par);
+		}
 	}
 
 	return val;
