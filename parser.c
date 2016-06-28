@@ -411,7 +411,7 @@ commands(parser *par)
 	for (i = 0, tok = peek(par); tok != TOK_EOF;
 			i++, tok = peek(par)) {
 		if (i >= max) break; /* FIXME */
-		cmds[i] = stmt(par);
+		cmds[i] = stmt(par); /* TODO signal STMT_ERROR to caller somehow. */
 
 		tok = peek(par);
 		if (tok->type == TOK_SEMICOLON)
