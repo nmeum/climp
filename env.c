@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include <stdlib.h>
 #include <string.h>
 
@@ -87,6 +85,26 @@ setval(env *tbl, char *key, int val)
 	}
 
 	last->next = ent;
+}
+
+int
+updval(env *tbl, char *key, int val)
+{
+	int keyh;
+	entry *buck, *next;
+
+	keyh = hash(tbl, key);
+	if (!(buck = tbl->entries[keyh]))
+		return -1;
+
+	for (next = buck; next != NULL; next = next->next)
+		if (!strcmp(next->key, key))
+			break;
+
+	if (!next) return -1;
+	next->value = val;
+
+	return 0;
 }
 
 int
