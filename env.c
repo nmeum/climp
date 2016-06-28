@@ -28,7 +28,6 @@ freeentry(entry *ent)
 
 	if (!ent) return;
 	free(ent->key);
-	free(ent->value);
 
 	for (next = ent->next; next != NULL; next = next->next)
 		freeentry(next);
@@ -65,14 +64,14 @@ hash(env *tbl, char *str)
 }
 
 void
-setval(env *tbl, char *key, char *val)
+setval(env *tbl, char *key, int val)
 {
 	int keyh;
 	entry *ent, *buck, *last, *next;
 
 	ent = emalloc(sizeof(entry));
 	ent->key   = estrdup(key);
-	ent->value = estrdup(val);
+	ent->value = val;
 	ent->next  = NULL;
 
 	keyh = hash(tbl, key);
@@ -81,25 +80,29 @@ setval(env *tbl, char *key, char *val)
 		return;
 	}
 
-	for (next = buck; next != NULL; next = next->next)
+	for (next = buck; next != NULL; next = next->next) {
+		if (!strcmp(next->key, key))
+			return;
 		last = next;
+	}
 
 	last->next = ent;
 }
 
-char*
-getval(env *tbl, char *key)
+int
+getval(env *tbl, char *key, int *dest)
 {
 	int keyh;
 	entry *buck, *next;
 
 	keyh = hash(tbl, key);
 	if (!(buck = tbl->entries[keyh]))
-		return NULL;
+		return -1;
 
 	for (next = buck; next != NULL; next = next->next)
 		if (!strcmp(next->key, key))
 			break;
 
-	return next->value;
+	*dest = next->value;
+	return 0;
 }

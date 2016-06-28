@@ -1,7 +1,8 @@
 typedef struct entry entry;
 
 struct entry {
-	char *key, *value;
+	char *key;
+	int value;
 	entry *next;
 };
 
@@ -14,5 +15,5 @@ struct env {
 
 env *newenv(int s);
 void freeenv(env *e);
-void setval (env *e, char *k, char *v);
-char *getval (env *e, char *k);
+void setval (env *e, char *k, int v);
+int getval (env *e, char *k, int *dest);
