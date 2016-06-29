@@ -84,6 +84,22 @@ execdefine(env *vars, statement *stmt)
 }
 
 evalerr
+execassign(env *vars, statement *stmt)
+{
+	evalerr ret;
+	int value;
+
+	if ((ret = evaluate(vars, stmt->d.assign.exp, &value))
+			!= EVAL_OK)
+		return ret;
+
+	if (updval(vars, stmt->d.assign.var, value))
+		return ERR_UNINITVAR;
+
+	return EVAL_OK;
+}
+
+evalerr
 execwrite(env *vars, statement *stmt)
 {
 	evalerr ret;
@@ -107,6 +123,8 @@ execute(env *vars, statement *stmt)
 			break; /* Never reached */
 		case STMT_DEFINE:
 			return execdefine(vars, stmt);
+		case STMT_ASSIGN:
+			return execassign(vars, stmt);
 		case STMT_WRITE:
 			return execwrite(vars, stmt);
 		default:

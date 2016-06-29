@@ -18,7 +18,7 @@ main(void)
 	statement **cmds, *err = emalloc(sizeof(statement));
 	parser *par;
 
-	par = newpar("let x := 5 % 2; ! x");
+	par = newpar("let x := 2; x := 3; ! x");
 	/* par = newpar("while foo do error end"); */
 
 	cmds = commands(par, err);

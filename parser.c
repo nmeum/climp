@@ -482,13 +482,13 @@ assignstmt(parser *par)
 	tok = next(par);
 	if (tok->type != TOK_VAR)
 		return error(tok->line, "Expected variable for assigment");
+	else
+		var = tok->text;
 
 	tok = next(par);
 	if (tok->type != TOK_ASSIGN)
 		return error(tok->line, "Expected ':=', got '%s'",
 				tok->text);
-	else
-		var = tok->text;
 
 	if (!(val = expression(par)))
 		return error(tok->line, "Expected expression after ':='");
