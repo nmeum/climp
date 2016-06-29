@@ -82,8 +82,6 @@ struct statement {
 	} d;
 };
 
-/* XXX remove me */
-statement *stmt(parser *p);
 parser *newpar(char *m);
 void freepar(parser *p);
 void freestmt(statement *st);

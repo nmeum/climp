@@ -17,8 +17,9 @@
 		return error(T->line, "Expected '%s' got '%s'", M, T->text); \
 	   } while (0)
 
-void freeexpr(expr *exp);
-expr *expression(parser *par);
+statement *stmt(parser *p);
+void freeexpr(expr *e);
+expr *expression(parser *p);
 
 /**
  * TODO: EXPTXT doesn't free shit
