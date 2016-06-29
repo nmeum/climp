@@ -400,18 +400,18 @@ expression(parser *par)
 }
 
 statement**
-commands(parser *par, statement *err)
+cmdblock(parser *par, statement *err)
 {
 	int i = -1;
 	token *tok;
 	statement **cmds;
-	size_t max = 1024;
+	size_t max = 512;
 
 	cmds = malloc(max * sizeof(statement));
 	for (i = 0, tok = peek(par); tok != TOK_EOF;
 			i++, tok = peek(par)) {
 		if (i > max) {
-			err->d.error.msg  = estrdup("Exceeded maximum amount of commands");
+			err->d.error.msg  = estrdup("Exceeded maximum amount of cmdblock");
 			err->d.error.line = 0;
 			goto err;
 		}
@@ -546,7 +546,7 @@ condstmt(parser *par)
 	EXPTXT(tok, "then");
 
 	err = newstmt();
-	cmds1 = commands(par, err);
+	cmds1 = cmdblock(par, err);
 	if (cmds1 == NULL) {
 		freeexpr(cexp);
 		return err;
@@ -555,7 +555,7 @@ condstmt(parser *par)
 	tok = next(par);
 	EXPTXT(tok, "else");
 
-	cmds2 = commands(par, err);
+	cmds2 = cmdblock(par, err);
 	if (cmds2 == NULL) {
 		freestmts(cmds1);
 		freeexpr(cexp);
@@ -587,7 +587,7 @@ loopstmt(parser *par)
 	EXPTXT(tok, "do");
 
 	err = newstmt();
-	cmds = commands(par, err);
+	cmds = cmdblock(par, err);
 	if (cmds == NULL) {
 		freeexpr(cexp);
 		return err;
@@ -628,4 +628,33 @@ stmt(parser *par)
 	}
 
 	return val;
+}
+
+statement**
+parseprog(parser *par, statement *err)
+{
+	token *tok;
+	statement **cmds;
+
+	cmds = cmdblock(par, err);
+	if (cmds == NULL) {
+		freestmts(cmds);
+		return NULL;
+	}
+
+	tok = peek(par);
+	if (tok->type != TOK_EOF) {
+		err->type = STMT_ERROR;
+		err->d.error.line = -1;
+
+		if (tok->type == TOK_ERROR)
+			err->d.error.msg = estrdup(tok->text);
+		else
+			err->d.error.msg = estrdup("Expected EOF");
+
+		freestmts(cmds);
+		return NULL;
+	}
+
+	return cmds;
 }

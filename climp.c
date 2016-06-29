@@ -23,7 +23,7 @@ evalstr(char *input)
 	parser *par;
 
 	par = newpar(input);
-	if (!(cmds = commands(par, err))) {
+	if (!(cmds = parseprog(par, err))) {
 		if (err->d.error.line >= 1)
 			fprintf(stderr, "Parser error in line %d: %s\n",
 					err->d.error.line, err->d.error.msg);

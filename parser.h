@@ -84,6 +84,6 @@ struct statement {
 
 parser *newpar(char *m);
 void freepar(parser *p);
-void freestmt(statement *st);
+void freestmt(statement *s);
 void freestmts(statement **s);
-statement **commands(parser *p, statement *e);
+statement **parseprog(parser *p, statement *e);
