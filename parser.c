@@ -21,8 +21,7 @@ void freeexpr(expr *exp);
 expr *expression(parser *par);
 
 /**
- * TODO: strdup for char pointers in statements / expressions.
- * TODO: better error handling when parsing expressions.
+ * TODO: EXPTXT doesn't free shit
  */
 
 parser*
@@ -435,7 +434,6 @@ commands(parser *par, statement *err)
 		return NULL;
 	}
 
-	err = NULL;
 	cmds[++i] = NULL;
 	return cmds;
 
@@ -551,8 +549,6 @@ condstmt(parser *par)
 	if (cmds1 == NULL) {
 		freeexpr(cexp);
 		return err;
-	} else {
-		free(err);
 	}
 
 	tok = next(par);

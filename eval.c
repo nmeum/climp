@@ -9,6 +9,8 @@
 #include "parser.h"
 #include "eval.h"
 
+evalerr execblk(env *e, statement **s);
+
 evalerr
 evalop(binop op, int arg1, int arg2, int *dest)
 {
@@ -116,6 +118,22 @@ execwrite(env *vars, statement *stmt)
 }
 
 evalerr
+execcond(env *vars, statement *stmt)
+{
+	evalerr ret;
+	int value;
+
+	if ((ret = evaluate(vars, stmt->d.cond.cond, &value))
+			!= EVAL_OK)
+		return ret;
+
+	if (value == 0)
+		return execblk(vars, stmt->d.cond.brn2);
+	else
+		return execblk(vars, stmt->d.cond.brn1);
+}
+
+evalerr
 execute(env *vars, statement *stmt)
 {
 	switch (stmt->type) {
@@ -127,6 +145,8 @@ execute(env *vars, statement *stmt)
 			return execassign(vars, stmt);
 		case STMT_WRITE:
 			return execwrite(vars, stmt);
+		case STMT_COND:
+			return execcond(vars, stmt);
 		default:
 			/* TODO */
 			break;
@@ -137,17 +157,27 @@ execute(env *vars, statement *stmt)
 }
 
 evalerr
-eval(statement **cmds)
+execblk(env *vars, statement **cmds)
 {
-	env *vars;
 	evalerr ret;
 	statement *stmt;
 
-	vars = newenv(512);
 	while ((stmt = *cmds++))
 		if ((ret = execute(vars, stmt)) != EVAL_OK)
 			return ret;
 
-	freeenv(vars);
 	return EVAL_OK;
+}
+
+evalerr
+eval(statement **cmds)
+{
+	env *vars;
+	evalerr ret;
+
+	vars = newenv(512);
+	ret = execblk(vars, cmds);
+
+	freeenv(vars);
+	return ret;
 }
