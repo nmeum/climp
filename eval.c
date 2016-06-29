@@ -16,13 +16,16 @@ evalop(binop op, int arg1, int arg2, int *dest)
 {
 	switch (op) {
 		case OP_PLUS:
-			*dest = arg1 + arg2;
+			if (__builtin_sadd_overflow(arg1, arg2, dest))
+				return ERR_PRECISION;
 			break;
 		case OP_MINUS:
-			*dest = arg1 - arg2;
+			if (__builtin_ssub_overflow(arg1, arg2, dest))
+				return ERR_PRECISION;
 			break;
 		case OP_MULTI:
-			*dest = arg1 * arg2;
+			if (__builtin_smul_overflow(arg1, arg2, dest))
+				return ERR_PRECISION;
 			break;
 		case OP_DIVIDE:
 			if (arg2 == 0)
