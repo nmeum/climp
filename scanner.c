@@ -55,9 +55,6 @@ emit(scanner *scr, tok_t tkt)
 	strncpy(dest, &scr->input[scr->start], siz - 1);
 	dest[siz - 1] = '\0';
 
-	if (tkt == TOK_NEWLINE)
-		scr->line++;
-
 	tok->line = scr->line;
 	tok->text = dest;
 	tok->type = tkt;
@@ -113,7 +110,8 @@ lexany(void *pscr)
 	
 	switch (nxt) {
 	case '\n':
-		emit(scr, TOK_NEWLINE);
+		scr->line++;
+		ignore(scr);
 		lexany(scr);
 		return NULL;
 	case ';':
