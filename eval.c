@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <semaphore.h>
 #include <pthread.h>
+#include <unistd.h>
 
 #include <sys/queue.h>
 
@@ -109,7 +110,7 @@ execread(env *vars, statement *stmt)
 {
 	int input;
 
-	if (printf("Input: ") <= 0)
+	if (isatty(0) && printf("Input: ") <= 0)
 		return ERR_PRINTF;
 	if (fflush(stdout))
 		return ERR_FLUSH;
@@ -132,8 +133,12 @@ execwrite(env *vars, statement *stmt)
 			!= EVAL_OK)
 		return ret;
 
-	if (printf("Value: %d\n", value) <= 0)
-		return ERR_PRINTF;
+	if (isatty(0)) {
+		if (printf("Value: %d\n", value) <= 0)
+			return ERR_PRINTF;
+	} else {
+		printf("%d\n", value);
+	}
 
 	return EVAL_OK;
 }
