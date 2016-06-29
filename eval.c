@@ -134,6 +134,26 @@ execcond(env *vars, statement *stmt)
 }
 
 evalerr
+execloop(env *vars, statement *stmt)
+{
+	evalerr ret;
+	int value;
+
+	if ((ret = evaluate(vars, stmt->d.loop.cond, &value))
+			!= EVAL_OK)
+		return ret;
+
+	while (value != 0) {
+		execblk(vars, stmt->d.loop.brn);
+		if ((ret = evaluate(vars, stmt->d.loop.cond, &value))
+				!= EVAL_OK)
+			return ret;
+	}
+
+	return EVAL_OK;
+}
+
+evalerr
 execute(env *vars, statement *stmt)
 {
 	switch (stmt->type) {
@@ -147,6 +167,8 @@ execute(env *vars, statement *stmt)
 			return execwrite(vars, stmt);
 		case STMT_COND:
 			return execcond(vars, stmt);
+		case STMT_LOOP:
+			return execloop(vars, stmt);
 		default:
 			/* TODO */
 			break;

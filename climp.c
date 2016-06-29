@@ -18,8 +18,8 @@ main(void)
 	statement **cmds, *err = emalloc(sizeof(statement));
 	parser *par;
 
-	par = newpar("let x := 0; if x then x := 10 else x := 20 end; ! x");
-	/* par = newpar("while foo do error end"); */
+	/* par = newpar("let x := 0; if x then x := 10 else x := 20 end; ! x"); */
+	par = newpar("let x := 5; while x do x := x - 1 end; ! x");
 
 	cmds = commands(par, err);
 	if (cmds == NULL) {
