@@ -165,7 +165,9 @@ execloop(env *vars, statement *stmt)
 		return ret;
 
 	while (value != 0) {
-		execblk(vars, stmt->d.loop.brn);
+		if ((ret = execblk(vars, stmt->d.loop.brn)) != EVAL_OK)
+			return ret;
+
 		if ((ret = evaluate(vars, stmt->d.loop.cond, &value))
 				!= EVAL_OK)
 			return ret;
