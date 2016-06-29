@@ -102,6 +102,24 @@ execassign(env *vars, statement *stmt)
 }
 
 evalerr
+execread(env *vars, statement *stmt)
+{
+	int input;
+
+	if (printf("Input: ") <= 0)
+		return ERR_PRINTF;
+	if (fflush(stdout))
+		return ERR_FLUSH;
+
+	if (scanf("%d", &input) == EOF)
+		return ERR_SCANF;
+	if (updval(vars, stmt->d.read.var, input))
+		return ERR_UNINITVAR;
+
+	return EVAL_OK;
+}
+
+evalerr
 execwrite(env *vars, statement *stmt)
 {
 	evalerr ret;
@@ -163,15 +181,14 @@ execute(env *vars, statement *stmt)
 			return execdefine(vars, stmt);
 		case STMT_ASSIGN:
 			return execassign(vars, stmt);
+		case STMT_READ:
+			return execread(vars, stmt);
 		case STMT_WRITE:
 			return execwrite(vars, stmt);
 		case STMT_COND:
 			return execcond(vars, stmt);
 		case STMT_LOOP:
 			return execloop(vars, stmt);
-		default:
-			/* TODO */
-			break;
 	}
 
 	/* Never reached. */

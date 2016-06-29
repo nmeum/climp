@@ -1,5 +1,7 @@
 typedef enum {
 	EVAL_OK,
+	ERR_SCANF,
+	ERR_FLUSH,
 	ERR_PRINTF,
 	ERR_UNDEFVAR,
 	ERR_UNINITVAR,
