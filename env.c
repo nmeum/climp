@@ -61,7 +61,7 @@ hash(env *tbl, char *str)
 	return hash % tbl->size;
 }
 
-void
+int
 setval(env *tbl, char *key, int val)
 {
 	int keyh;
@@ -75,16 +75,17 @@ setval(env *tbl, char *key, int val)
 	keyh = hash(tbl, key);
 	if (!(buck = tbl->entries[keyh])) {
 		tbl->entries[keyh] = ent;
-		return;
+		return 0;
 	}
 
 	for (next = buck; next != NULL; next = next->next) {
 		if (!strcmp(next->key, key))
-			return;
+			return -1;
 		last = next;
 	}
 
 	last->next = ent;
+	return 0;
 }
 
 int

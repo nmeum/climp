@@ -87,3 +87,5 @@ statement *stmt(parser *p);
 parser *newpar(char *m);
 void freepar(parser *p);
 void freestmt(statement *st);
+void freestmts(statement **s);
+statement **commands(parser *p, statement *e);

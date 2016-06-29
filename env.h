@@ -15,6 +15,6 @@ struct env {
 
 env *newenv(int s);
 void freeenv(env *e);
-void setval (env *e, char *k, int v);
+int setval (env *e, char *k, int v);
 int getval (env *e, char *k, int *d);
 int updval (env *e, char *k, int v);

@@ -400,9 +400,9 @@ expression(parser *par)
 }
 
 statement**
-commands(parser *par)
+commands(parser *par, statement *err)
 {
-	size_t i = -1;
+	int i = -1;
 	token *tok;
 	statement **cmds;
 	size_t max = 1024;
@@ -410,8 +410,17 @@ commands(parser *par)
 	cmds = malloc(max * sizeof(statement));
 	for (i = 0, tok = peek(par); tok != TOK_EOF;
 			i++, tok = peek(par)) {
-		if (i >= max) break; /* FIXME */
-		cmds[i] = stmt(par); /* TODO signal STMT_ERROR to caller somehow. */
+		if (i > max) {
+			err->d.error.msg  = estrdup("Exceeded maximum amount of commands");
+			err->d.error.line = 0;
+			goto err;
+		}
+
+		if ((cmds[i] = stmt(par)) && cmds[i]->type == STMT_ERROR) {
+			err->d.error.msg  = estrdup(cmds[i]->d.error.msg);
+			err->d.error.line = cmds[i++]->d.error.line;
+			goto err;
+		}
 
 		tok = peek(par);
 		if (tok->type == TOK_SEMICOLON)
@@ -420,12 +429,21 @@ commands(parser *par)
 			break;
 	}
 
-	if (i == -1)
+	if (i == -1) {
+		err = error(-1, "Unexpected EOF");
+		free(cmds);
 		return NULL;
-	else
-		cmds[++i] = NULL;
+	}
 
+	err = NULL;
+	cmds[++i] = NULL;
 	return cmds;
+
+err:
+	err->type = STMT_ERROR;
+	cmds[i] = NULL;
+	freestmts(cmds);
+	return NULL;
 }
 
 statement*
@@ -515,7 +533,7 @@ writestmt(parser *par)
 statement*
 condstmt(parser *par)
 {
-	statement **cmds1, **cmds2;
+	statement **cmds1, **cmds2, *err;
 	token *tok;
 	expr *cexp;
 
@@ -528,11 +546,27 @@ condstmt(parser *par)
 	tok = next(par);
 	EXPTXT(tok, "then");
 
-	cmds1 = commands(par);
+	err = newstmt();
+	cmds1 = commands(par, err);
+	if (cmds1 == NULL) {
+		freeexpr(cexp);
+		return err;
+	} else {
+		free(err);
+	}
+
 	tok = next(par);
 	EXPTXT(tok, "else");
 
-	cmds2 = commands(par);
+	cmds2 = commands(par, err);
+	if (cmds2 == NULL) {
+		freestmts(cmds1);
+		freeexpr(cexp);
+		return err;
+	} else {
+		free(err);
+	}
+
 	tok = next(par);
 	EXPTXT(tok, "end");
 
@@ -543,7 +577,7 @@ statement*
 loopstmt(parser *par)
 {
 	token *tok;
-	statement **cmds;
+	statement **cmds, *err;
 	expr *cexp;
 
 	tok = next(par);
@@ -555,7 +589,15 @@ loopstmt(parser *par)
 	tok = next(par);
 	EXPTXT(tok, "do");
 
-	cmds = commands(par);
+	err = newstmt();
+	cmds = commands(par, err);
+	if (cmds == NULL) {
+		freeexpr(cexp);
+		return err;
+	} else {
+		free(err);
+	}
+
 	tok = next(par);
 	EXPTXT(tok, "end");
 

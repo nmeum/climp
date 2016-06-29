@@ -1,28 +1,39 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <sys/queue.h>
 #include <semaphore.h>
 #include <pthread.h>
 
+#include "env.h"
 #include "scanner.h"
 #include "parser.h"
+#include "eval.h"
+#include "util.h"
 
 int
 main(void)
 {
-	statement *st;
+	evalerr ret;
+	statement **cmds, *err = emalloc(sizeof(statement));
 	parser *par;
 
-	par = newpar("while 1 do let f := 2 end");
+	par = newpar("let x := 5 % 2; ! x");
+	/* par = newpar("while foo do error end"); */
 
-	st = stmt(par);
-	if (st->type == STMT_ERROR) {
-		printf("ERROR: %s\n", st->d.error.msg);
+	cmds = commands(par, err);
+	if (cmds == NULL) {
+		printf("Parser error: %s\n", err->d.error.msg);
+		freestmt(err);
 	} else {
-		printf("TYPE: %d\n", st->type);
+		free(err);
 	}
 
+	if (cmds && (ret = eval(cmds)) != EVAL_OK) {
+		printf("Runtime error: %d\n", ret);
+	}
+
+	freestmts(cmds);
 	freepar(par);
-	freestmt(st);
 	return 0;
 }
