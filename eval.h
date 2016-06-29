@@ -10,4 +10,4 @@ typedef enum {
 	ERR_VARDEFINED,
 } evalerr;
 
-evalerr eval (statement **s);
+evalerr eval(env *e, statement **c);

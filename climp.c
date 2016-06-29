@@ -14,10 +14,15 @@
 #include "eval.h"
 #include "util.h"
 
+enum {
+	VARTBLSIZ = 512,
+};
+
 int
 evalstr(char *input)
 {
-	int r = 0;
+	int r = 1;
+	env *vars;
 	evalerr ret;
 	statement **cmds, *err = emalloc(sizeof(statement));
 	parser *par;
@@ -31,16 +36,21 @@ evalstr(char *input)
 			fprintf(stderr, "Parser error: %s\n", err->d.error.msg);
 
 		freestmt(err);
-		r = -1;
+		goto err;
 	} else {
 		free(err);
 	}
 
-	if (cmds && (ret = eval(cmds)) != EVAL_OK) {
+	vars = newenv(VARTBLSIZ);
+	if ((ret = eval(vars, cmds)) != EVAL_OK) {
 		fprintf(stderr, "Runtime error: %d\n", ret);
-		r = -1;
+		goto err;
 	}
 
+	r = 0;
+	freeenv(vars);
+
+err:
 	freestmts(cmds);
 	freepar(par);
 	return r;
@@ -49,6 +59,7 @@ evalstr(char *input)
 int
 main(int argc, char **argv)
 {
+	int ret;
 	FILE *fd;
 	char *input, *fp = argv[1];
 	struct stat st;
@@ -70,11 +81,8 @@ main(int argc, char **argv)
 		die("fclose failed");
 
 	input[st.st_size] = '\0';
-	if (evalstr(input)) {
-		free(input);
-		return 1;
-	} else {
-		free(input);
-		return 0;
-	}
+	ret = evalstr(input);
+
+	free(input);
+	return ret;
 }

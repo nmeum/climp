@@ -9,7 +9,7 @@
 #include "parser.h"
 #include "eval.h"
 
-evalerr execblk(env *e, statement **s);
+evalerr eval(env *e, statement **s);
 
 evalerr
 evalop(binop op, int arg1, int arg2, int *dest)
@@ -149,9 +149,9 @@ execcond(env *vars, statement *stmt)
 		return ret;
 
 	if (value == 0)
-		return execblk(vars, stmt->d.cond.brn2);
+		return eval(vars, stmt->d.cond.brn2);
 	else
-		return execblk(vars, stmt->d.cond.brn1);
+		return eval(vars, stmt->d.cond.brn1);
 }
 
 evalerr
@@ -165,7 +165,7 @@ execloop(env *vars, statement *stmt)
 		return ret;
 
 	while (value != 0) {
-		if ((ret = execblk(vars, stmt->d.loop.brn)) != EVAL_OK)
+		if ((ret = eval(vars, stmt->d.loop.brn)) != EVAL_OK)
 			return ret;
 
 		if ((ret = evaluate(vars, stmt->d.loop.cond, &value))
@@ -201,7 +201,7 @@ execute(env *vars, statement *stmt)
 }
 
 evalerr
-execblk(env *vars, statement **cmds)
+eval(env *vars, statement **cmds)
 {
 	evalerr ret;
 	statement *stmt;
@@ -211,17 +211,4 @@ execblk(env *vars, statement **cmds)
 			return ret;
 
 	return EVAL_OK;
-}
-
-evalerr
-eval(statement **cmds)
-{
-	env *vars;
-	evalerr ret;
-
-	vars = newenv(512);
-	ret = execblk(vars, cmds);
-
-	freeenv(vars);
-	return ret;
 }
