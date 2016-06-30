@@ -226,7 +226,7 @@ freescr(scanner *scr)
 	pthread_mutex_destroy(scr->qmutex);
 
 	TAILQ_FOREACH_SAFE(tok, &scr->qhead, toks, nxt) {
-		if (tok->type != -1) {
+		if (tok != &septok) {
 			free(tok->text);
 			free(tok);
 		}
