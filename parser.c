@@ -645,7 +645,7 @@ parseprog(parser *par, statement *err)
 	tok = peek(par);
 	if (tok->type != TOK_EOF) {
 		err->type = STMT_ERROR;
-		err->d.error.line = -1;
+		err->d.error.line = tok->line;
 
 		if (tok->type == TOK_ERROR) {
 			err->d.error.msg = estrdup(tok->text);
