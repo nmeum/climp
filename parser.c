@@ -226,15 +226,18 @@ newloop(expr *cexp, statement **brn)
 statement*
 error(int line, char *msg, ...)
 {
-	int slen = 1;
+	int slen;
 	statement *stmt;
 	va_list ap;
 	char *dest;
 
 	va_start(ap, msg);
-	slen += vsnprintf(NULL, 0, msg, ap);
-	dest = emalloc(slen * sizeof(char*));
+	slen = vsnprintf(NULL, 0, msg, ap);
+	va_end(ap);
 
+	dest = emalloc(slen * sizeof(char));
+
+	va_start(ap, msg);
 	vsnprintf(dest, slen, msg, ap);
 	va_end(ap);
 
