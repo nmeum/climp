@@ -177,7 +177,7 @@ assign(char *var, expr *exp)
 }
 
 statement*
-read(char *var)
+newread(char *var)
 {
 	statement *stmt;
 
@@ -188,7 +188,7 @@ read(char *var)
 }
 
 statement*
-write(expr *exp)
+newwrite(expr *exp)
 {
 	statement *stmt;
 
@@ -199,7 +199,7 @@ write(expr *exp)
 }
 
 statement*
-cond(expr *cexp, statement **brn1, statement **brn2)
+newcond(expr *cexp, statement **brn1, statement **brn2)
 {
 	statement *stmt;
 
@@ -212,7 +212,7 @@ cond(expr *cexp, statement **brn1, statement **brn2)
 }
 
 statement*
-loop(expr *cexp, statement **brn)
+newloop(expr *cexp, statement **brn)
 {
 	statement *stmt;
 
@@ -505,7 +505,7 @@ readstmt(parser *par)
 	if (tok->type != TOK_VAR)
 		return error(tok->line, "Expected variable after operator");
 
-	return read(tok->text);
+	return newread(tok->text);
 }
 
 statement*
@@ -522,7 +522,7 @@ writestmt(parser *par)
 	if (!(val = expression(par)))
 		return error(tok->line, "Expected expression after operator");
 
-	return write(val);
+	return newwrite(val);
 }
 
 statement*
@@ -566,7 +566,7 @@ condstmt(parser *par)
 	tok = next(par);
 	EXPTXT(tok, "end");
 
-	return cond(cexp, cmds1, cmds2);
+	return newcond(cexp, cmds1, cmds2);
 }
 
 statement*
@@ -597,7 +597,7 @@ loopstmt(parser *par)
 	tok = next(par);
 	EXPTXT(tok, "end");
 
-	return loop(cexp, cmds);
+	return newloop(cexp, cmds);
 }
 
 statement*
