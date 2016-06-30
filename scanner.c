@@ -208,8 +208,9 @@ freescr(scanner *scr)
 	if (!scr)
 		return;
 
-	pthread_join(scr->thread, NULL); /* TODO stop the thread instead. */
+	pthread_join(*scr->thread, NULL); /* TODO stop the thread instead. */
 	pthread_mutex_destroy(scr->qmutex);
+	free(scr->thread);
 
 	TAILQ_FOREACH_SAFE(tok, &scr->qhead, toks, nxt) {
 		if (tok != &septok) {
@@ -242,6 +243,7 @@ scanstr(char *str)
 	scr->input  = estrdup(str);
 	scr->inlen  = strlen(str);
 	scr->qmutex = emalloc(sizeof(pthread_mutex_t));
+	scr->thread = emalloc(sizeof(pthread_t));
 
 	scr->fullsem  = emalloc(sizeof(sem_t));
 	scr->emptysem = emalloc(sizeof(sem_t));
@@ -255,7 +257,7 @@ scanstr(char *str)
 	TAILQ_INSERT_TAIL(&scr->qhead, &septok, toks);
 
 	pthread_mutex_init(scr->qmutex, NULL);
-	pthread_create(&scr->thread, NULL, lexany, (void*)scr);
+	pthread_create(scr->thread, NULL, lexany, (void*)scr);
 	return scr;
 }
 
