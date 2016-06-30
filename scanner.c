@@ -209,9 +209,10 @@ freescr(scanner *scr)
 		return;
 
 	pthread_join(*scr->thread, NULL); /* TODO stop the thread instead. */
-	pthread_mutex_destroy(scr->qmutex);
-	free(scr->thread);
+	if (pthread_mutex_destroy(scr->qmutex))
+		die("pthread_mutex_destroy failed");
 
+	free(scr->thread);
 	TAILQ_FOREACH_SAFE(tok, &scr->qhead, toks, nxt) {
 		if (tok != &septok) {
 			free(tok->text);
@@ -256,8 +257,11 @@ scanstr(char *str)
 	TAILQ_INIT(&scr->qhead);
 	TAILQ_INSERT_TAIL(&scr->qhead, &septok, toks);
 
-	pthread_mutex_init(scr->qmutex, NULL);
-	pthread_create(scr->thread, NULL, lexany, (void*)scr);
+	if (pthread_mutex_init(scr->qmutex, NULL))
+		die("pthread_mutex_init failed");
+	if (pthread_create(scr->thread, NULL, lexany, (void*)scr))
+		die("pthread_create failed");
+
 	return scr;
 }
 
