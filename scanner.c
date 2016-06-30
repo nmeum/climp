@@ -14,10 +14,10 @@
 
 static token septok = { .type = -1, .text = NULL, .line = -1 };
 
-void lexvar(scanner *scr);
-void lexdigit(scanner *scr);
-void lexspace(scanner *scr);
-void lexassign(scanner *scr);
+void* lexvar(scanner *scr);
+void* lexdigit(scanner *scr);
+void* lexspace(scanner *scr);
+void* lexassign(scanner *scr);
 
 char
 nextch(scanner *scr)
@@ -112,65 +112,51 @@ lexany(void *pscr)
 	case '\n':
 		scr->line++;
 		ignore(scr);
-		lexany(scr);
-		return NULL;
+		return lexany(scr);
 	case ';':
 		emit(scr, TOK_SEMICOLON);
-		lexany(scr);
-		return NULL;
+		return lexany(scr);
 	case ':':
-		lexassign(scr);
-		return NULL;
+		return lexassign(scr);
 	case '(':
 		emit(scr, TOK_LBRACKET);
-		lexany(scr);
-		return NULL;
+		return lexany(scr);
 	case ')':
 		emit(scr, TOK_RBRACKET);
-		lexany(scr);
-		return NULL;
+		return lexany(scr);
 	case '%':
 		emit(scr, TOK_DIVIDE);
-		lexany(scr);
-		return NULL;
+		return lexany(scr);
 	case '*':
 		emit(scr, TOK_MULTI);
-		lexany(scr);
-		return NULL;
+		return lexany(scr);
 	case '+':
 		emit(scr, TOK_PLUS);
-		lexany(scr);
-		return NULL;
+		return lexany(scr);
 	case '-':
 		emit(scr, TOK_MINUS);
-		lexany(scr);
-		return NULL;
+		return lexany(scr);
 	case '?':
 		emit(scr, TOK_QUESTION);
-		lexany(scr);
-		return NULL;
+		return lexany(scr);
 	case '!':
 		emit(scr, TOK_EXCLAMATION);
-		lexany(scr);
-		return NULL;
+		return lexany(scr);
 	}
 
 	if (isalpha(nxt)) {
-		lexvar(scr);
-		return NULL;
+		return lexvar(scr);
 	} else if (isdigit(nxt)) {
-		lexdigit(scr);
-		return NULL;
+		return lexdigit(scr);
 	} else if (isspace(nxt)) {
-		lexspace(scr);
-		return NULL;
+		return lexspace(scr);
 	}
 
 	errf(scr, "Invalid character '%c'", nxt);
 	return NULL;
 }
 
-void
+void*
 lexassign(scanner *scr) {
 	char c;
 
@@ -181,37 +167,37 @@ lexassign(scanner *scr) {
 		errf(scr, "Expected '=' after ':' got '%c'", c);
 	}
 
-	lexany(scr);
+	return lexany(scr);
 }
 
-void
+void*
 lexvar(scanner *scr)
 {
 	while (isalpha(peekch(scr)))
 		nextch(scr);
 
 	emit(scr, TOK_VAR);
-	lexany(scr);
+	return lexany(scr);
 }
 
-void
+void*
 lexdigit(scanner *scr)
 {
 	while (isdigit(peekch(scr)))
 		nextch(scr);
 
 	emit(scr, TOK_DIG);
-	lexany(scr);
+	return lexany(scr);
 }
 
-void
+void*
 lexspace(scanner *scr)
 {
 	while (isspace(peekch(scr)))
 		nextch(scr);
 
 	ignore(scr);
-	lexany(scr);
+	return lexany(scr);
 }
 
 void
