@@ -268,7 +268,7 @@ scanstr(char *str)
 	TAILQ_INSERT_TAIL(&scr->qhead, &septok, toks);
 
 	pthread_mutex_init(scr->qmutex, NULL);
-	pthread_create(&scr->thread, NULL, lexany, scr);
+	pthread_create(&scr->thread, NULL, lexany, (void*)scr);
 	return scr;
 }
 
