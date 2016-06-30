@@ -634,6 +634,7 @@ statement**
 parseprog(parser *par, statement *err)
 {
 	token *tok;
+	size_t emlen;
 	statement **cmds;
 
 	cmds = cmdblock(par, err);
@@ -647,10 +648,15 @@ parseprog(parser *par, statement *err)
 		err->type = STMT_ERROR;
 		err->d.error.line = -1;
 
-		if (tok->type == TOK_ERROR)
+		if (tok->type == TOK_ERROR) {
 			err->d.error.msg = estrdup(tok->text);
-		else
-			err->d.error.msg = estrdup("Expected EOF");
+		} else {
+			emlen = 24 + strlen(tok->text);
+			err->d.error.msg = emalloc(emlen * sizeof(char*));
+			snprintf(err->d.error.msg, emlen - 1,
+					"Expected ';', found '%s'", tok->text);
+			err->d.error.msg[emlen] = '\0';
+		}
 
 		freestmts(cmds);
 		return NULL;
