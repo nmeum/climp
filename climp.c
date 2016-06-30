@@ -29,7 +29,7 @@ evalstr(char *input)
 
 	par = newpar(input);
 	if (!(cmds = parseprog(par, err))) {
-		if (err->d.error.line >= 1)
+		if (err->d.error.line >= 0)
 			fprintf(stderr, "Parser error in line %d: %s\n",
 					err->d.error.line, err->d.error.msg);
 		else
