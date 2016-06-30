@@ -237,6 +237,7 @@ scanstr(char *str)
 	scr = emalloc(sizeof(*scr));
 	scr->eof    = 0;
 	scr->pos    = 0;
+	scr->line   = 1;
 	scr->start  = 0;
 	scr->input  = estrdup(str);
 	scr->inlen  = strlen(str);
