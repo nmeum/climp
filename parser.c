@@ -21,10 +21,6 @@ statement *stmt(parser *p);
 void freeexpr(expr *e);
 expr *expression(parser *p);
 
-/**
- * TODO: EXPTXT doesn't free shit
- */
-
 parser*
 newpar(char *str)
 {
@@ -553,7 +549,10 @@ condstmt(parser *par)
 	}
 
 	tok = next(par);
-	EXPTXT(tok, "else");
+	if (tok->type == TOK_VAR && !strcmp(tok->text, "else")) {
+		printf("Expected '%s', got '%s'", "else", tok->text);
+		free(err);
+	}
 
 	cmds2 = cmdblock(par, err);
 	if (cmds2 == NULL) {
