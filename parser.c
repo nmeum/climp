@@ -549,9 +549,9 @@ condstmt(parser *par)
 	}
 
 	tok = next(par);
-	if (tok->type == TOK_VAR && !strcmp(tok->text, "else")) {
-		printf("Expected '%s', got '%s'", "else", tok->text);
+	if (tok->type != TOK_VAR || strcmp(tok->text, "else")) {
 		free(err);
+		return error(tok->line, "Expected '%s', got '%s'", "else", tok->text);
 	}
 
 	cmds2 = cmdblock(par, err);
