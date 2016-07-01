@@ -554,6 +554,8 @@ condstmt(parser *par)
 	tok = next(par);
 	if (tok->type != TOK_VAR || strcmp(tok->text, "else")) {
 		free(err);
+		freeexpr(cexp);
+		freestmts(cmds1);
 		return error(tok->line, "Expected '%s', got '%s'", "else", tok->text);
 	}
 
